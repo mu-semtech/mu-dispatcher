@@ -1,12 +1,19 @@
 defmodule Dispatcher do
+  use Plug.Router
 
-  def init( options ) do
-    options
+  plug :match
+  plug :dispatch
+
+  get "/hello" do
+    send_resp( conn, 200, "world" )
   end
 
-  def call(conn, _opts) do
-    conn
-    |> Plug.Conn.put_resp_content_type("text/plain")
-    |> Plug.Conn.send_resp( 200, "Hello World" )
+  get "/" do
+    send_resp( conn, 200, "This is plug" )
   end
+
+  match _ do
+    send_resp( conn, 404, "Route not found" )
+  end
+
 end

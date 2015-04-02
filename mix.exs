@@ -5,7 +5,12 @@ defmodule Dispatcher.Mixfile do
     [app: :dispatcher,
      version: "0.0.1",
      elixir: "~> 1.0",
-     deps: deps]
+     deps: deps,
+     aliases: aliases]
+  end
+
+  def aliases do
+    [serve: ["run", &Dispatcher.start/1]]
   end
 
   # Configuration for the OTP application

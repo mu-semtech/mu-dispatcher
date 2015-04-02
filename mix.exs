@@ -17,7 +17,7 @@ defmodule Dispatcher.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:cowboy, :plug, :logger]]
+    [applications: [:cowboy, :plug, :logger, :hackney]]
   end
 
   # Dependencies can be Hex packages:
@@ -31,6 +31,7 @@ defmodule Dispatcher.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [{:cowboy, "~> 1.0.0"},
-     {:plug, "~> 0.11.1"}]
+     {:plug, "~> 0.11.1"},
+     {:hackney, "~> 1.0.0"}]
   end
 end

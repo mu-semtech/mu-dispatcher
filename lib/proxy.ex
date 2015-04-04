@@ -6,7 +6,7 @@ defmodule Proxy do
     # Start a request to the client saying we will stream the body.
     # We are simply passing all req_headers forward.
 
-    {:ok, client} = :hackney.request(:get, uri, conn.req_headers, :stream, [])
+    {:ok, client} = :hackney.request(conn.method, uri, conn.req_headers, :stream, [])
 
     conn
     |> write_proxy(client)

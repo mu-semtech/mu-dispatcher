@@ -17,7 +17,7 @@ defmodule Dispatcher do
     send_resp( conn, 200, "This is plug" )
   end
 
-  get "/lisply/*path" do
+  match "/lisply/*path" do
     new_extension = Enum.join( path, "/" )
     full_path = "http://localhost:8080/" <> new_extension
     Proxy.send conn, full_path

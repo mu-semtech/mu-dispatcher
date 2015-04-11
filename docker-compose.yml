@@ -1,0 +1,10 @@
+identifier:
+  image: semtech/mu-identifier
+  links:
+    - dispatcher:dispatcher
+  ports:
+    - "4000:80"
+dispatcher:
+  build: .
+  ports:
+    - "80:80"

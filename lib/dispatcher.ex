@@ -18,9 +18,8 @@ defmodule Dispatcher do
   end
 
   match "/lisply/*path" do
-    new_extension = Enum.join( path, "/" )
-    full_path = "http://localhost:8080/" <> new_extension
-    Proxy.send conn, full_path
+    # Proxy.forward conn, path, "http://localhost:8080/"
+    Proxy.forward conn, path, "http://172.17.42.1:8080/"
   end
 
   match _ do

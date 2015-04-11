@@ -43,4 +43,12 @@ defmodule Proxy do
     |> send_resp(status, body)
   end
 
+  # Forwards to the specified path.  The path is an array of URL
+  # components.
+  def forward( conn, path, base ) do
+    new_extension = Enum.join( path, "/" )
+    full_path = base <> new_extension
+    Proxy.send conn, full_path
+  end
+
 end

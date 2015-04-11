@@ -2,7 +2,7 @@ defmodule Dispatcher do
   use Plug.Router
 
   def start(_argv) do
-    port = 4000
+    port = 80
     Plug.Adapters.Cowboy.http __MODULE__, [], port: port
     :timer.sleep(:infinity)
   end

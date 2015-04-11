@@ -7,6 +7,7 @@ defmodule Dispatcher do
     :timer.sleep(:infinity)
   end
 
+  plug Plug.Logger
   plug :match
   plug :dispatch
 

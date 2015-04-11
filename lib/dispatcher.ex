@@ -4,6 +4,7 @@ defmodule Dispatcher do
   def start(_argv) do
     port = 4000
     Plug.Adapters.Cowboy.http __MODULE__, [], port: port
+    :timer.sleep(:infinity)
   end
 
   plug :match

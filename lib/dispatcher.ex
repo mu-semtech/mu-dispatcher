@@ -24,6 +24,11 @@ defmodule Dispatcher do
     Proxy.forward conn, path, "http://172.17.42.1:8080/"
   end
 
+  match "/session/*path" do
+    # eg: POST /session/logout
+    Proxy.forward conn, path, "http://login/"
+  end
+
   match _ do
     send_resp( conn, 404, "Route not found" )
   end

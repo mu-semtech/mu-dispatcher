@@ -3,8 +3,16 @@ identifier:
   links:
     - dispatcher:dispatcher
   ports:
-    - "4000:80"
+    - "80:80"
 dispatcher:
   build: .
+  links:
+    - login:login
+db:
+  image: tenforce/virtuoso
   ports:
-    - "80:80"
+    - "8890:8890"
+login:
+  image: semtech/mu-login-service
+  links:
+    - db:database

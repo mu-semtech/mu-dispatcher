@@ -30,6 +30,11 @@ defmodule Dispatcher do
     Proxy.forward conn, path, "http://login/"
   end
 
+  match "/comments/*path" do
+    IO.puts "Matching /comments/*path"
+    Proxy.forward conn, path, "http://comments/"
+  end
+
   match _ do
     send_resp( conn, 404, "Route not found" )
   end

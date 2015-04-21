@@ -8,6 +8,7 @@ dispatcher:
   build: .
   links:
     - login:login
+    - comments:comments
 db:
   image: tenforce/virtuoso:virtuoso-v7.2.0-latest
   environment:
@@ -16,5 +17,9 @@ db:
     - "8890:8890"
 login:
   image: semtech/mu-login-service
+  links:
+    - db:database
+comments:
+  image: semtech/mu-page-comments-service
   links:
     - db:database

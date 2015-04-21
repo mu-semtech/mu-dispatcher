@@ -6,12 +6,17 @@ defmodule Proxy do
     # Start a request to the client saying we will stream the body.
     # We are simply passing all req_headers forward.
 
-    {:ok, client} = :hackney.request(conn.method, uri, conn.req_headers, :stream, [])
+    url = build_url( uri, conn.query_string )
+
+    {:ok, client} = :hackney.request(conn.method, url, conn.req_headers, :stream, [])
 
     conn
     |> write_proxy(client)
     |> read_proxy(client)
   end
+
+  defp build_url( uri, "" ), do: uri
+  defp build_url( uri, query_string ), do: uri <> "?" <> query_string
 
   # Reads the connection body and write it to the
   # client recursively.

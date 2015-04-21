@@ -8,6 +8,8 @@ defmodule Proxy do
 
     url = build_url( uri, conn.query_string )
 
+    IO.puts "Forwarding request to #{url}"
+
     {:ok, client} = :hackney.request(conn.method, url, conn.req_headers, :stream, [])
 
     conn

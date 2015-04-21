@@ -3,6 +3,7 @@ defmodule Dispatcher do
 
   def start(_argv) do
     port = 80
+    IO.puts "Starting Plug with Cowboy on port #{port}"
     Plug.Adapters.Cowboy.http __MODULE__, [], port: port
     :timer.sleep(:infinity)
   end

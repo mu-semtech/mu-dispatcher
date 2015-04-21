@@ -9,7 +9,9 @@ dispatcher:
   links:
     - login:login
 db:
-  image: tenforce/virtuoso
+  image: tenforce/virtuoso:virtuoso-v7.2.0-latest
+  environment:
+    SPARQL_UPDATE: "true"
   ports:
     - "8890:8890"
 login:

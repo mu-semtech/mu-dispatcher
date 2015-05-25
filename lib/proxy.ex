@@ -7,10 +7,11 @@ defmodule Proxy do
     # We are simply passing all req_headers forward.
 
     url = build_url( uri, conn.query_string )
+    request_headers = forwarded_request_headers( conn )
 
     IO.puts "Forwarding request to #{url}"
 
-    {:ok, client} = :hackney.request(conn.method, url, conn.req_headers, :stream, [])
+    {:ok, client} = :hackney.request(conn.method, url, request_headers, :stream, [])
 
     conn
     |> write_proxy(client)
@@ -48,6 +49,12 @@ defmodule Proxy do
 
     %{conn | resp_headers: headers}
     |> send_resp(status, body)
+  end
+
+  # Returns all request headers which should be forwarded for the
+  # given connection.  This may add new request headers.
+  defp forwarded_request_headers( conn ) do
+    [ { "X-Rewrite-Url", Plug.Conn.full_path( conn ) } | conn.req_headers ]
   end
 
   # Forwards to the specified path.  The path is an array of URL

@@ -1,7 +1,7 @@
-%{"cowboy": {:hex, :cowboy, "1.0.0"},
+%{"cowboy": {:hex, :cowboy, "1.0.3"},
   "cowlib": {:hex, :cowlib, "1.0.1"},
   "hackney": {:hex, :hackney, "1.0.6"},
   "idna": {:hex, :idna, "1.0.2"},
-  "plug": {:hex, :plug, "0.11.1"},
-  "ranch": {:hex, :ranch, "1.0.0"},
+  "plug": {:hex, :plug, "0.14.0"},
+  "ranch": {:hex, :ranch, "1.1.0"},
   "ssl_verify_hostname": {:hex, :ssl_verify_hostname, "1.0.1"}}

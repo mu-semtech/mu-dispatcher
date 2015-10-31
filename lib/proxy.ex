@@ -54,7 +54,7 @@ defmodule Proxy do
   # Returns all request headers which should be forwarded for the
   # given connection.  This may add new request headers.
   defp forwarded_request_headers( conn ) do
-    [ { "X-Rewrite-Url", Plug.Conn.full_path( conn ) } | conn.req_headers ]
+    [ { "X-Rewrite-Url", conn.request_path } | conn.req_headers ]
   end
 
   # Forwards to the specified path.  The path is an array of URL

@@ -11,7 +11,7 @@ defmodule Proxy do
 
     IO.puts "Forwarding request to #{url}"
 
-    {:ok, client} = :hackney.request(conn.method, url, request_headers, :stream, [])
+    {:ok, client} = :hackney.request(conn.method, url, request_headers, :stream, [{timeout, 150000}])
 
     conn
     |> write_proxy(client)

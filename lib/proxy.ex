@@ -54,7 +54,8 @@ defmodule Proxy do
   # Returns all request headers which should be forwarded for the
   # given connection.  This may add new request headers.
   defp forwarded_request_headers( conn ) do
-    [ { "X-Rewrite-Url", conn.request_path } | conn.req_headers ]
+    cleaned_headers = List.keydelete( conn.req_headers, "Transfer-Encoding", 1 )
+    [ { "X-Rewrite-Url", conn.request_path } | cleaned_headers ]
   end
 
   # Forwards to the specified path.  The path is an array of URL

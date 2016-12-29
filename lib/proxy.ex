@@ -1,60 +1,8 @@
 defmodule Proxy do
-  import Plug.Conn
 
-  # Support for dispatching the connection
-  def send(conn, uri) do
-    # Start a request to the client saying we will stream the body.
-    # We are simply passing all req_headers forward.
-
-    url = build_url( uri, conn.query_string )
-    request_headers = forwarded_request_headers( conn )
-
-    IO.puts "Forwarding request to #{url}"
-
-    {:ok, client} = :hackney.request(conn.method, url, request_headers, :stream, [timeout: 150000])
-
-    conn
-    |> write_proxy(client)
-    |> read_proxy(client)
-  end
-
-  defp build_url( uri, "" ), do: uri
-  defp build_url( uri, query_string ), do: uri <> "?" <> query_string
-
-  # Reads the connection body and write it to the
-  # client recursively.
-  defp write_proxy(conn, client) do
-    # Check Plug.Conn.read_body/2 docs for maximum body value,
-    # the size of each chunk, and supported timeout values.
-    case read_body(conn, []) do
-      {:ok, body, conn} ->
-        :hackney.send_body(client, body)
-        conn
-      {:more, body, conn} ->
-        :hackney.send_body(client, body)
-        write_proxy(conn, client)
-    end
-  end
-
-  # Reads the client response and sends it back.
-  defp read_proxy(conn, client) do
-    {:ok, status, headers, client} = :hackney.start_response(client)
-    {:ok, body} = :hackney.body(client)
-
-    # Delete the transfer encoding header. Ideally, we would read
-    # if it is chunked or not and act accordingly to support streaming.
-    #
-    # We may also need to delete other headers in a proxy.
-    headers = List.keydelete(headers, "Transfer-Encoding", 1)
-
-    %{conn | resp_headers: headers}
-    |> send_resp(status, body)
-  end
-
-  # Returns all request headers which should be forwarded for the
-  # given connection.  This may add new request headers.
-  defp forwarded_request_headers( conn ) do
-    [ { "X-Rewrite-Url", conn.request_path } | conn.req_headers ]
+  def header_processor( conn, headers, state ) do
+    new_headers = [ { "x-rewrite-url", conn.request_path } | headers ]
+    { new_headers, state }
   end
 
   # Forwards to the specified path.  The path is an array of URL
@@ -62,7 +10,35 @@ defmodule Proxy do
   def forward( conn, path, base ) do
     new_extension = Enum.join( path, "/" )
     full_path = base <> new_extension
-    Proxy.send conn, full_path
+    processors = %{
+      header_processor: fn (headers, state) ->
+        headers = [ { "x-rewrite-url", conn.request_path } | headers ]
+        { headers, state }
+      end,
+      chunk_processor: fn (chunk, state) ->
+        # IO.puts "Received chunk:"
+        # IO.inspect chunk
+        { chunk, state }
+      end,
+      body_processor: fn (body, state) ->
+        # IO.puts "Received body:"
+        # IO.inspect body
+        { body, state }
+      end,
+      finish_hook: fn (state) ->
+        # IO.puts "Fully received body"
+        # IO.puts state.body
+        # IO.puts "Current state:"
+        # IO.inspect state
+        { true, state }
+      end,
+      state: %{is_processor_state: true, body: "", headers: %{}, status_code: 200, cache_keys: [], clear_keys: []}
+    }
+
+    opts = PlugProxy.init url: full_path
+    conn
+    |> Map.put( :processors, processors )
+    |> PlugProxy.call( opts )
   end
 
 end

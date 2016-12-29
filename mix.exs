@@ -30,8 +30,6 @@ defmodule Dispatcher.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    [{:cowboy, "~> 1.0.2"},
-     {:plug, "~> 0.12"},
-     {:hackney, "~> 1.0"}]
+    [{:plug_proxy, git: "https://github.com/madnificent/plug-proxy.git"}]
   end
 end

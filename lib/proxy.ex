@@ -3,8 +3,7 @@ defmodule Proxy do
   # Forwards to the specified path.  The path is an array of URL
   # components.
   def forward( conn, path, base ) do
-    new_extension = Enum.join( path, "/" )
-    full_path = base <> new_extension
+    full_path = full_path( conn, path, base )
     processors = %{
       header_processor: fn (headers, state) ->
         headers = [ { "x-rewrite-url", conn.request_path } | headers ]
@@ -35,5 +34,15 @@ defmodule Proxy do
     |> Map.put( :processors, processors )
     |> PlugProxy.call( opts )
   end
+
+  defp full_path(conn, path, base) do
+    new_extension = Enum.join( path, "/" )
+    base = base <> new_extension
+    case conn.query_string do
+      "" -> base
+      qs -> base <> "?" <> qs
+    end
+  end
+
 
 end

@@ -44,5 +44,4 @@ defmodule Proxy do
     end
   end
 
-
 end

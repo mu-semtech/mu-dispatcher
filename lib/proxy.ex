@@ -1,10 +1,5 @@
 defmodule Proxy do
 
-  def header_processor( conn, headers, state ) do
-    new_headers = [ { "x-rewrite-url", conn.request_path } | headers ]
-    { new_headers, state }
-  end
-
   # Forwards to the specified path.  The path is an array of URL
   # components.
   def forward( conn, path, base ) do
@@ -32,7 +27,7 @@ defmodule Proxy do
         # IO.inspect state
         { true, state }
       end,
-      state: %{is_processor_state: true, body: "", headers: %{}, status_code: 200, cache_keys: [], clear_keys: []}
+      state: %{is_processor_state: true, body: "", headers: %{}, status_code: 200}
     }
 
     opts = PlugProxy.init url: full_path

@@ -6,7 +6,6 @@ defmodule Proxy do
     full_path = full_path( conn, path, base )
     processors = %{
       header_processor: fn (headers, state) ->
-        headers = [ { "x-rewrite-url", conn.request_path } | headers ]
         { headers, state }
       end,
       chunk_processor: fn (chunk, state) ->
@@ -31,8 +30,14 @@ defmodule Proxy do
 
     opts = PlugProxy.init url: full_path
     conn
+    |> add_custom_request_headers
     |> Map.put( :processors, processors )
     |> PlugProxy.call( opts )
+  end
+
+  defp add_custom_request_headers(conn) do
+    new_headers = [ { "x-rewrite-url", conn.request_path } | conn.req_headers ]
+    %{ conn | req_headers: new_headers }
   end
 
   defp full_path(conn, path, base) do

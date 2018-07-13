@@ -3,10 +3,10 @@ defmodule Dispatcher.Mixfile do
 
   def project do
     [app: :dispatcher,
-     version: "1.1.0",
+     version: "1.1.1",
      elixir: "~> 1.0",
-     deps: deps,
-     aliases: aliases]
+     deps: deps(),
+     aliases: aliases()]
   end
 
   def aliases do

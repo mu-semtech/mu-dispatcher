@@ -3,6 +3,8 @@ defmodule Matcher do
     quote do
       require Matcher
       import Matcher
+      import Plug.Conn, only: [send_resp: 3]
+      import Proxy, only: [forward: 3]
 
       def dispatch(conn) do
         Matcher.dispatch_call(

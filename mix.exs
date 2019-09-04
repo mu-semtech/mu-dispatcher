@@ -17,7 +17,7 @@ defmodule Dispatcher.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger, :cowboy, :plug, :hackney]]
+    [applications: [:logger, :cowboy, :plug, :hackney, :accept]]
   end
 
   # Dependencies can be Hex packages:
@@ -30,6 +30,7 @@ defmodule Dispatcher.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    [{:plug_proxy, git: "https://github.com/madnificent/plug-proxy.git"}]
+    [{:plug_proxy, git: "https://github.com/madnificent/plug-proxy.git"},
+     {:accept, "~> 0.3.5"}]
   end
 end

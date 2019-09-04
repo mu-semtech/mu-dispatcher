@@ -1,42 +1,47 @@
 defmodule Dispatcher do
-  use Plug.Router
+  use Matcher
 
-  def start(_argv) do
-    port = 80
-    IO.puts "Starting Plug with Cowboy on port #{port}"
-    Plug.Adapters.Cowboy.http __MODULE__, [], port: port
-    :timer.sleep(:infinity)
+  define_accept_types [
+    text: [ "text/*" ],
+    html: [ "text/html", "application/xhtml+html" ],
+    json: [ "application/json", "application/vnd.api+json" ]
+  ]
+
+  # get "/*_rest", %{ accept: %{ html: true } } do
+  #   Proxy.forward conn, [], "http://static/ember-app/index.html"
+  # end
+
+  # get "/assets/*rest", %{} do
+  #   Proxy.forward conn, rest, "http://static/assets/"
+  # end
+
+  post "/hello/erika", %{} do
+    Plug.Conn.send_resp conn, 401, "FORBIDDEN"
   end
 
-  plug Plug.Logger
-  plug :match
-  plug :dispatch
-
-  get "/hello" do
-    send_resp( conn, 200, "world" )
+  match "/hello/erika", %{ accept: %{ json: true } } do
+    Plug.Conn.send_resp conn, 200, "{ \"message\": \"Hello Erika\" }"
   end
 
-  get "/" do
-    send_resp( conn, 200, "This is plug" )
+  match "/hello/erika", %{ accept: %{ html: true } } do
+    Plug.Conn.send_resp conn, 200, "<html><head><title>Hello</title></head><body>Hello Erika</body></html>"
   end
 
-  match "/lisply/*path" do
-    # Proxy.forward conn, path, "http://localhost:8080/"
-    Proxy.forward conn, path, "http://172.17.42.1:8080/"
+  match "/hello/aad/*_rest", %{ accept: %{ json: true } } do
+    Plug.Conn.send_resp conn, 200, "{ \"message\": \"Hello Aad\" }"
   end
 
-  match "/session/*path" do
-    # eg: POST /session/logout
-    Proxy.forward conn, path, "http://login/"
+  match "/*_rest", %{ accept: %{ json: true }, last_call: true } do
+    Plug.Conn.send_resp conn, 404, "{ \"errors\": [ \"message\": \"Not found\", \"status\": 404 } ] }"
   end
 
-  match "/comments/*path" do
-    IO.puts "Matching /comments/*path"
-    Proxy.forward conn, path, "http://comments/"
+  match "/*_rest", %{ accept: %{ html: true }, last_call: true } do
+    Plug.Conn.send_resp conn, 404, "<html><head><title>Not found</title></head><body>No acceptable response found</body></html>"
   end
 
-  match _ do
-    send_resp( conn, 404, "Route not found" )
+  match "/*_rest", %{ last_call: true } do
+    Plug.Conn.send_resp conn, 404, "No response found"
   end
 
+  last_match()
 end

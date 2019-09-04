@@ -208,13 +208,13 @@ defmodule Matcher do
     # Extract core info
     {method, path, accept_header} =
       extract_core_info_from_conn(conn)
-      |> IO.inspect(label: "extracted header")
+      # |> IO.inspect(label: "extracted header")
 
     # Extract core request info
     accept_hashes =
       sort_and_group_accept_headers(accept_header)
       |> transform_grouped_accept_headers(accept_types)
-      |> IO.inspect(label: "accept hashes")
+      # |> IO.inspect(label: "accept hashes")
 
     # For each set of media types, go over the defined calls searching
     # for a handled response.
@@ -271,13 +271,13 @@ defmodule Matcher do
     # or a function as fn ( accept_hash_to_update, { type, subtype },
     # media_range_tuple )
     grouped_accept_headers
-    |> IO.inspect(label: "grouped accept headers")
+    # |> IO.inspect(label: "grouped accept headers")
     |> Enum.map(fn {_score, header_array} ->
-      IO.inspect(header_array, label: "processing header array")
+      # IO.inspect(header_array, label: "processing header array")
 
       Enum.reduce(header_array, %{}, fn media_range_tuple, acc ->
         {_media_range, received_type, received_subtype, _score, _options} = media_range_tuple
-        |> IO.inspect( label: "Received media range tuple" )
+        # |> IO.inspect( label: "Received media range tuple" )
 
         Enum.reduce(configured_accept_types, acc, fn
           {new_key, specified_accept_values}, acc ->
@@ -288,8 +288,8 @@ defmodule Matcher do
                 |> Enum.map( &String.to_charlist/1 )
 
               specified_tuple = {specified_type, specified_subtype}
-              |> IO.inspect( label: "Comparing specified tuple" )
-              IO.inspect( {received_type, received_subtype} , label: "with received tuple" )
+              # |> IO.inspect( label: "Comparing specified tuple" )
+              # IO.inspect( {received_type, received_subtype} , label: "with received tuple" )
 
               case specified_tuple do
                 {^received_type, ^received_subtype} -> Map.put(acc, new_key, true)
@@ -299,20 +299,20 @@ defmodule Matcher do
                 _ when received_type == '*' -> Map.put(acc, new_key, true)
                 _ -> acc
               end
-              |> IO.inspect( label: "new map" )
+              # |> IO.inspect( label: "new map" )
             end)
 
           functor, acc ->
             functor.(acc, {received_type, received_subtype}, media_range_tuple)
         end)
       end)
-      |> IO.inspect(label: "reduced to")
+      |> IO.inspect(label: "Used accept maps")
     end)
   end
 
   defp sort_and_group_accept_headers(accept) do
     :accept_header.parse(accept)
-    |> IO.inspect(label: "parsed_accept_header")
+    # |> IO.inspect(label: "parsed_accept_header")
     |> Enum.sort_by(&elem(&1, 3))
     |> Enum.group_by(&elem(&1, 3))
     |> Map.to_list()

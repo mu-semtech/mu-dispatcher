@@ -36,7 +36,16 @@ defmodule Proxy do
   end
 
   defp add_custom_request_headers(conn) do
-    new_headers = [ { "x-rewrite-url", conn.request_path } | conn.req_headers ]
+    new_headers =
+      [ {"x-rewrite-url", conn.request_path} | conn.req_headers ]
+
+    new_headers =
+      new_headers
+      |> Enum.reject( fn
+          ({"accept-encoding", _}) -> true
+           _ -> nil
+        end )
+
     %{ conn | req_headers: new_headers }
   end
 

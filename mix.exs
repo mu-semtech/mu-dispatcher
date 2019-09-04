@@ -10,7 +10,7 @@ defmodule Dispatcher.Mixfile do
   end
 
   def aliases do
-    [server: ["run", &Dispatcher.start/1]]
+    [server: ["run", &PlugRouterDispatcher.start/1]]
   end
 
   # Configuration for the OTP application

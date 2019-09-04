@@ -1,4 +1,4 @@
-defmodule DispatcherPlugRouter do
+defmodule PlugRouterDispatcher do
   use Plug.Router
 
   def start(_argv) do

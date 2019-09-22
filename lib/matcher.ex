@@ -9,7 +9,7 @@ defmodule Matcher do
       def dispatch(conn) do
         Matcher.dispatch_call(
           conn,
-          fn -> accept_types end,
+          fn -> accept_types() end,
           fn a, b, c, d -> do_match(a, b, c, d) end
         )
       end

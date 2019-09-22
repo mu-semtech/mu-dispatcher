@@ -2,22 +2,18 @@ defmodule Dispatcher.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :dispatcher,
-     version: "1.1.2",
-     elixir: "~> 1.0",
-     deps: deps(),
-     aliases: aliases()]
-  end
-
-  def aliases do
-    [server: ["run", &PlugRouterDispatcher.start/1]]
+    [app: :dispatcher, version: "1.1.2", elixir: "~> 1.7", deps: deps()]
   end
 
   # Configuration for the OTP application
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger, :cowboy, :plug, :hackney, :accept]]
+    [
+      extra_applications: [:logger, :plug_mint_proxy, :cowboy, :plug, :accept],
+      mod: {MuDispatcher, []},
+      env: []
+    ]
   end
 
   # Dependencies can be Hex packages:
@@ -30,7 +26,10 @@ defmodule Dispatcher.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    [{:plug_proxy, git: "https://github.com/madnificent/plug-proxy.git"},
-     {:accept, "~> 0.3.5"}]
+    [
+      {:plug_mint_proxy,
+       git: "https://github.com/madnificent/plug-mint-proxy.git", branch: "back-to-the-future"},
+      {:accept, "~> 0.3.5"}
+    ]
   end
 end

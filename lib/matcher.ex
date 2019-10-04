@@ -206,15 +206,15 @@ defmodule Matcher do
   # Call dispatching
   def dispatch_call(conn, accept_types, call_handler) do
     # Extract core info
-    {method, path, accept_header} =
-      extract_core_info_from_conn(conn)
-      # |> IO.inspect(label: "extracted header")
+    {method, path, accept_header} = extract_core_info_from_conn(conn)
+    # |> IO.inspect(label: "extracted header")
 
     # Extract core request info
     accept_hashes =
       sort_and_group_accept_headers(accept_header)
       |> transform_grouped_accept_headers(accept_types)
-      # |> IO.inspect(label: "accept hashes")
+
+    # |> IO.inspect(label: "accept hashes")
 
     # For each set of media types, go over the defined calls searching
     # for a handled response.
@@ -257,7 +257,12 @@ defmodule Matcher do
 
   defp extract_core_info_from_conn(conn) do
     %{method: method, path_info: path} = conn
-    [accept_header | _] = Plug.Conn.get_req_header(conn, "accept")
+
+    accept_header =
+      case Plug.Conn.get_req_header(conn, "accept") do
+        [accept_header | _] -> accept_header
+        _ -> ""
+      end
 
     {method, path, accept_header}
   end
@@ -285,7 +290,7 @@ defmodule Matcher do
               [specified_type, specified_subtype] =
                 specified_accept_value
                 |> String.split("/")
-                |> Enum.map( &String.to_charlist/1 )
+                |> Enum.map(&String.to_charlist/1)
 
               specified_tuple = {specified_type, specified_subtype}
               # |> IO.inspect( label: "Comparing specified tuple" )
@@ -299,6 +304,7 @@ defmodule Matcher do
                 _ when received_type == '*' -> Map.put(acc, new_key, true)
                 _ -> acc
               end
+
               # |> IO.inspect( label: "new map" )
             end)
 
@@ -311,11 +317,25 @@ defmodule Matcher do
   end
 
   defp sort_and_group_accept_headers(accept) do
-    :accept_header.parse(accept)
+    accept
+    |> safe_parse_accept_header()
     # |> IO.inspect(label: "parsed_accept_header")
     |> Enum.sort_by(&elem(&1, 3))
     |> Enum.group_by(&elem(&1, 3))
     |> Map.to_list()
     |> Enum.sort_by(&elem(&1, 0), &>=/2)
+  end
+
+  defp safe_parse_accept_header(accept_header) do
+    try do
+      case :accept_header.parse(accept_header) do
+        [] -> :accept_header.parse("*/*")
+        parsed_headers -> parsed_headers
+      end
+    rescue
+      _ ->
+        IO.inspect(accept_header, label: "Could not parse this accept header")
+        :accept_header.parse("*/*")
+    end
   end
 end

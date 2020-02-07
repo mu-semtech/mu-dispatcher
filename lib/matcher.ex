@@ -16,49 +16,49 @@ defmodule Matcher do
     end
   end
 
-  defmacro get(path, options \\ %{}, do: block) do
+  defmacro get(path, options \\ quote(do: %{}), do: block) do
     quote do
       match_method(get, unquote(path), unquote(options), do: unquote(block))
     end
   end
 
-  defmacro put(path, options \\ %{}, do: block) do
+  defmacro put(path, options \\ quote(do: %{}), do: block) do
     quote do
       match_method(put, unquote(path), unquote(options), do: unquote(block))
     end
   end
 
-  defmacro post(path, options \\ %{}, do: block) do
+  defmacro post(path, options \\ quote(do: %{}), do: block) do
     quote do
       match_method(post, unquote(path), unquote(options), do: unquote(block))
     end
   end
 
-  defmacro delete(path, options \\ %{}, do: block) do
+  defmacro delete(path, options \\ quote(do: %{}), do: block) do
     quote do
       match_method(delete, unquote(path), unquote(options), do: unquote(block))
     end
   end
 
-  defmacro patch(path, options \\ %{}, do: block) do
+  defmacro patch(path, options \\ quote(do: %{}), do: block) do
     quote do
       match_method(patch, unquote(path), unquote(options), do: unquote(block))
     end
   end
 
-  defmacro head(path, options \\ %{}, do: block) do
+  defmacro head(path, options \\ quote(do: %{}), do: block) do
     quote do
       match_method(head, unquote(path), unquote(options), do: unquote(block))
     end
   end
 
-  defmacro options(path, options \\ %{}, do: block) do
+  defmacro options(path, options \\ quote(do: %{}), do: block) do
     quote do
       match_method(options, unquote(path), unquote(options), do: unquote(block))
     end
   end
 
-  defmacro match(path, options \\ %{}, do: block) do
+  defmacro match(path, options \\ quote(do: %{}), do: block) do
     quote do
       match_method(any, unquote(path), unquote(options), do: unquote(block))
     end

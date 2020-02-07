@@ -74,10 +74,16 @@ defmodule Matcher do
 
   # Builds a method in the form of:
   #
-  # def do_match( "GET", ["hello","erika"], %{ accept: %{} }, conn ) do
+  # def do_match( "GET", "/hello/erika/", %{ accept: %{} }, conn ) do
   #    ...
   # end
   defmacro match_method(call, path, options, do: block) do
+    # Throw warning when strange conditions occur
+    unless String.starts_with?(path, "/") do
+      IO.puts "WARNING: invalid path: #{path} does not start with a `/`"
+    end
+
+    # Implementation
     call_name =
       call
       |> elem(0)

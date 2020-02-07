@@ -4,13 +4,38 @@ Core microservice for dispatching requests to the preferred microservice.
 
 The mu-dispatcher is one of the core elements in the mu.semte.ch architecture.  This service will dispatch requests to other microservices based on the incoming request path.  You can run the service through docker, but you probably want to configure it using [mu-project](http://github.com/mu-semtech/mu-project) so it uses your own configuration.
 
-## Hands-on
+The Dispatcher runs as an application in which the `Dispatcher` module is overridden.  It expects a dispatcher.ex file to exist on `/config/dispatcher.ex` when the dispatcher boots up.
+
+# Table of Contents
+1. [Configuration](#Configuration)
+2. [Supported API](#Supported-API)
+    1. [Matcher](#Use-Matcher)
+    2. [Http Verbs](#Http-verbs)
+    3. [last_match](#last_match)
+    4. [define_accept_types](#define_accept_types)
+3. [forwarding requests](#Forwarding-requests)
+    1. [Basic forwarding](#Basic-forwarding)
+    2. [Forwarding paths](#Forwarding-paths)
+    3. [Matching on verb](#Matching-on-verb)
+    3. [Matching Accept headers](#Matching-Accept-headers)
+4. [Fallback routes and 404 pages](#Fallback-routes-and-404-pages)
+5. [Manipulating responses](#Manipulating-responses)
+6. [How-to / Extra information](#Extra-information)
+    1. [Host an EmberJS app](#Host-an-EmberJS-app)
+    2. [External API CORS headers](#External-API-CORS-headers)
+    3. [Provide 404 pages](#Provide-404-pages)
+    4. [Architecture](#Architecture)
+        1. [forwarding connections with plug_mint_proxy](#Forwarding-Connections)
+        2. [Wiring with Plug](#Wiring-with-Plug)
+        3. [Header manipulation](#Header-manipulation)
+        4. [Matcher](#Matcher)
+
+### Configuration
 
 The disptacher is configured using the dispatcher.ex file in a [mu-project](https://github.com/mu-semtech/mu-project).
 
-### General setup
-
-The configuration is an Elixir module named Dispatcher which uses the `Matcher` functionality.  Anempty set of accept types is required and the last match must be supplied.
+The basic (default) configuration of the mu-dispatcher is an Elixir module named `Dispatcher` which uses the `Matcher` functionality.  
+An empty set of accept types is required (`define_accept_types []`) and the last match (`last_match`) must be supplied.
 
 ```elixir
 defmodule Dispatcher do
@@ -23,9 +48,45 @@ defmodule Dispatcher do
 end
 ```
 
+### Supported API
+
+#### Use Matcher
+
+The using Matcher macro sets up the matcher.  It imports Matcher, send_resp and forward.
+
+### Http verbs
+### `get`, `put`, `post`, `delete`, `patch`, `head`, `options`, `match`
+
+Implements a specific matcher on the http verb with the corresponding name.  The `match` macro matches all verbs.
+
+```Accepts:```
+
+  - path: A string which is deconstructed into variables.
+  - options: The options hash containing options to match on for this call:
+    - accept: hash with all required accept shortforms analyzed through `define_accept_types`
+    - last_call: set to true when searching for a fallback solution (for sending a clean 404)
+  - block: Code block for processing and sending the request
+
+```Supplies:```
+
+  - conn: Plug connection to be forwarded or responded to
+  - path: Often the `path` as input is set as `"/something/*path"` in which case the `path` variable contains unused path segments
+
+### last_match
+
+Set right after the last clause.  Ensures the matches iterate.
+
+### define_accept_types
+
+Provides a way to match the accept types to more readable terms so matching can happen in an easy and consistent manner.  Receives a property array describing each of the keys that will be used and their corresponding accept headers.  Wildcards are allowed in this specification.
+
+
+## Forwarding requests
+
 ### Basic forwarding
 
-You can proxy one path to another path using this service.  In order to forward requests coming in on `/sessions` to `http://sessionsservice/login`, we can add the following.
+You can proxy one path to another path using this service.
+In order to forward requests coming in on `/sessions` to `http://sessionsservice/login`, we can add the following.
 
 ```elixir
 defmodule Dispatcher do
@@ -56,23 +117,6 @@ defmodule Dispatcher do
 end
 ```
 
-### Matching on verb
-
-It is possible to explicitly match on an HTTP verb.  Supported verbs are GET, PUT, POST, DELETE, HEAD, OPTIONS.  Use the downcased name of the verb as a matching construct.  In order to only forward POST requests, we would update our sample to the following:
-
-```elixir
-defmodule Dispatcher do
-  use Matcher
-  define_accept_types []
-
-  post "/sessions", _ do
-    forward conn, [], "http://sessionsservice/login"
-  end
-
-  last_match
-end
-```
-
 ### Forwarding paths
 
 In many cases it is desired to verbatim forward all subroutes of a route.  A common case would be to dispatch the handling of some resource through mu-cl-resources.  We can forward any call to widgets this way.
@@ -91,6 +135,25 @@ end
 ```
 
 This match will forward any verb on any path that begins with `/widgets` to the [resource](http://github.com/mu-semtech/mu-cl-resources) microservice.
+
+
+### Matching on verb
+
+It is possible to explicitly match on an HTTP verb.  Supported verbs are GET, PUT, POST, DELETE, HEAD, OPTIONS.  Use the downcased name of the verb as a matching construct.  In order to only forward POST requests, we would update our sample to the following:
+
+```elixir
+defmodule Dispatcher do
+  use Matcher
+  define_accept_types []
+
+  post "/sessions", _ do
+    forward conn, [], "http://sessionsservice/login"
+  end
+
+  last_match
+end
+```
+
 
 ### Matching Accept headers
 
@@ -217,7 +280,7 @@ defmodule Dispatcher do
 end
 ```
 
-### It's just code
+### Manipulating responses
 
 The dispatcher is just code.  As you start reusing the same properties more often, you may want to supply default values to clean things up.  You can also add conditional logging, or manipulate the request before forwarding it to the client.
 
@@ -250,7 +313,7 @@ defmodule Dispatcher do
 end
 ```
 
-## How-to
+## Extra information
 
 This section contains various recipes to implement specific behaviour with basic explanation as to why it works.
 
@@ -361,19 +424,20 @@ defmodule Dispatcher do
 end
 ```
 
-## Architecture
+### Architecture
 
 The Dispatcher offers support for forwarding connections and for dispatching connections.
 
-### Forwarding connections
+#### Forwarding Connections
 
-Forwarding is built on top of `plug_mint_proxy` which uses the Mint library for efficient creation of requests.  Request accepting is based on Cowboy 2 which allows for http/2 support.
+Forwarding connections is built on top of `plug_mint_proxy` which uses the Mint library for efficient creation of requests.  Request accepting is based on Cowboy 2 which allows for http/2 support.
 
-### Wiring with Plug
+#### Wiring with Plug
+[Plug]((https://github.com/elixir-plug/plug)) expects call to be matched using its own matcher and dispatcher.
+This library provides some extra support.  
+Although tying this in within Plug might be simple, the request is dispatched to our own matcher in [plug_router_dispatcher.ex](./lib/plug_router_dispatcher.ex).
 
-Plug expects call to be matched using its own matcher and dispatcher.  This library provides some extra support.  Although tying this in within Plug might be simple, the request is dispatched to our own matcher in [plug_router_dispatcher.ex](./lib/plug_router_dispatcher.ex).
-
-### Header manipulation
+#### Header manipulation
 
 The dispatcher knows about certain header manipulations to smoothen out configuration.  These are configured using `plug_mint_proxy`'s manipulators as seen in [the Proxy module](./lib/proxy.ex)
 
@@ -381,50 +445,17 @@ The dispatcher knows about certain header manipulations to smoothen out configur
   - [Manipulators.RemoveAcceptEncodingHeader](./lib/manipulators/remove_accept_encoding_header.ex): Removes the `accept_encoding` header from the request as encryption is handled by the identifier and should not be hanlded by backend services.
   - [Manipulators.AddVaryHeader](./lib/add_vary_header.ex): Adds the `vary` header with value `"accept, cookie"` so both of these are taken into account during incidental caching in between links or the user's browser.
 
-### Matcher
+#### Matcher
 
 [The Matcher module](./lib/matcher.ex) contains the bulk of the logic in this component.  It parses the request Accept header and parses the accept types inside of it.  It also parses the supplied accept types and searches for an optimal solution to dispatch to.
 
 High-level the dispatching works as follows:
 
-  1. Parse the accept header
-  2. Group each score of the accept header (A)
-  3. Match each (A) with the set of `define_accept_types` noting that a `*` wildmatch may occur in both, thus resulting in (B).
-  4. For each (B) try to find a matched solution
-  5. If a solution is found, return it
-  6. If no solution is found, try to find a matched solution with the `last_match` option set to true
+1. Parse the accept header
+2. Group each score of the accept header (A)
+3. Match each (A) with the set of `define_accept_types` noting that a `*` wildmatch may occur in both, thus resulting in (B).
+4. For each (B) try to find a matched solution
+5. If a solution is found, return it
+6. If no solution is found, try to find a matched solution with the `last_match` option set to true
 
-### Configuration
 
-The Dispatcher runs as an application in which the `Dispatcher` module is overridden.  It expects a dispatcher.ex file to exist on `/config/dispatcher.ex` when the dispatcher boots up.
-
-## Supported API
-
-### `use Matcher`
-
-The using Matcher macro sets up the matcher.  It imports Matcher, send_resp and forward.
-
-### `get`, `put`, `post`, `delete`, `patch`, `head`, `options`, `match`
-
-Implements a specific matcher on the http verb with the corresponding name.  The `match` macro matches all verbs.
-
-Accepts:
-
-  - path: A string which is deconstructed into variables.
-  - options: The options hash containing options to match on for this call:
-    - accept: hash with all required accept shortforms analyzed through `define_accept_types`
-    - last_call: set to true when searching for a fallback solution (for sending a clean 404)
-  - block: Code block for processing and sending the request
-
-Supplies:
-
-  - conn: Plug connection to be forwarded or responded to
-  - path: Often the `path` as input is set as `"/something/*path"` in which case the `path` variable contains unused path segments
-
-### `last_match`
-
-Set right after the last clause.  Ensures the matches iterate.
-
-### `define_accept_types`
-
-Provides a way to match the accept types to more readable terms so matching can happen in an easy and consistent manner.  Receives a property array describing each of the keys that will be used and their corresponding accept headers.  Wildcards are allowed in this specification.

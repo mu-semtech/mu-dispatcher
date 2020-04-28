@@ -318,8 +318,8 @@ defmodule Matcher do
             functor.(acc, {received_type, received_subtype}, media_range_tuple)
         end)
       end)
-      |> IO.inspect(label: "Used accept maps")
-    end)
+      # |> IO.inspect(label: "Used accept maps")
+     end)
   end
 
   defp sort_and_group_accept_headers(accept) do

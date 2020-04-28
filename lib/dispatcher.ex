@@ -19,6 +19,8 @@ defmodule Dispatcher do
     Plug.Conn.send_resp conn, 401, "FORBIDDEN"
   end
 
+  # 200 microservice dispatching
+
   match "/hello/erika", %{ accept: %{ json: true } } do
     Plug.Conn.send_resp conn, 200, "{ \"message\": \"Hello Erika\" }"
   end
@@ -26,6 +28,8 @@ defmodule Dispatcher do
   match "/hello/erika", %{ accept: %{ html: true } } do
     Plug.Conn.send_resp conn, 200, "<html><head><title>Hello</title></head><body>Hello Erika</body></html>"
   end
+
+  # 404 routes
 
   match "/hello/aad/*_rest", %{ accept: %{ json: true } } do
     Plug.Conn.send_resp conn, 200, "{ \"message\": \"Hello Aad\" }"

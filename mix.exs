@@ -27,9 +27,9 @@ defmodule Dispatcher.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-      {:plug_mint_proxy,
-       git: "https://github.com/madnificent/plug-mint-proxy.git", branch: "back-to-the-future"},
-      {:accept, "~> 0.3.5"}
+      {:plug_mint_proxy, git: "https://github.com/madnificent/plug-mint-proxy.git", tag: "v0.0.2"},
+      {:accept, "~> 0.3.5"},
+      {:observer_cli, "~> 1.5"}
     ]
   end
 end

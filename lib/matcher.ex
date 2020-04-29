@@ -159,40 +159,6 @@ defmodule Matcher do
     end
   end
 
-  # # Accept headers
-  # defmacro accept(spec, key, value \\ true) do
-  #   spec_arr =
-  #     spec
-  #     |> String.split("/")
-  #     |> Enum.map(fn
-  #       "*" -> Macro.var(:_, nil)
-  #       str -> String.to_charlist(str)
-  #     end)
-
-  #   [type, subtype] = spec_arr
-  #   spec_tuple = {type, subtype}
-
-  #   spec_any_subtype = { subtype, "*" }
-  #   spec_any = { "*", "*" }
-
-  #   quote do
-  #     defp transform_accept_header(accept_hash, unquote(spec_tuple), _media_range) do
-  #       accept_hash
-  #       |> Map.put(unquote(key), unquote(value))
-  #     end
-
-  #     defp transform_accept_header(accept_hash, unquote(spec_any_subtype), _media_range) do
-  #       accept_hash
-  #       |> Map.put(unquote(key), unquote(value))
-  #     end
-
-  #     defp transform_accept_header(accept_hash, unquote(spec_any), _media_range) do
-  #       accept_hash
-  #       |> Map.put(unquote(key), unquote(value))
-  #     end
-  #   end
-  # end
-
   defmacro define_accept_types(received_accept_types) do
     quote do
       def accept_types do
@@ -200,14 +166,6 @@ defmodule Matcher do
       end
     end
   end
-
-  # defmacro last_accept do
-  #   quote do
-  #     defp transform_accept_header(accept_hash, _, _media_range) do
-  #       accept_hash
-  #     end
-  #   end
-  # end
 
   # Call dispatching
   def dispatch_call(conn, accept_types, call_handler) do

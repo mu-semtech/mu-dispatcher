@@ -170,7 +170,7 @@ defmodule Matcher do
   # Call dispatching
   def dispatch_call(conn, accept_types, call_handler) do
     # Extract core info
-    {method, path, accept_header} = extract_core_info_from_conn(conn)
+    {method, path, accept_header, host} = extract_core_info_from_conn(conn)
     # |> IO.inspect(label: "extracted header")
 
     # Extract core request info
@@ -185,7 +185,9 @@ defmodule Matcher do
     first_run =
       accept_hashes
       |> Enum.find_value(fn accept ->
-        case call_handler.(method, path, %{accept: accept}, conn) do
+        options = %{accept: accept, host: host}
+
+        case call_handler.(method, path, options, conn) do
           {:skip} -> nil
           conn -> conn
         end
@@ -200,7 +202,7 @@ defmodule Matcher do
         accept_hashes
         # |> IO.inspect(label: "Accept hashes for last call")
         |> Enum.find_value(fn accept ->
-          options = %{accept: accept, last_call: true}
+          options = %{accept: accept, host: host, last_call: true}
 
           # IO.inspect(method, label: "trying to call call_handler with method")
           # IO.inspect(path, label: "trying to call call_handler with path")
@@ -219,6 +221,8 @@ defmodule Matcher do
     end
   end
 
+  @spec extract_core_info_from_conn(Plug.Conn) ::
+          {String.t(), [String.t()], String.t(), [String.t()]}
   defp extract_core_info_from_conn(conn) do
     %{method: method, path_info: path} = conn
 
@@ -228,7 +232,12 @@ defmodule Matcher do
         _ -> ""
       end
 
-    {method, path, accept_header}
+    hostarr =
+      conn.host
+      |> String.split(".")
+      |> Enum.reverse()
+
+    {method, path, accept_header, hostarr}
   end
 
   defp transform_grouped_accept_headers(grouped_accept_headers, accept_types) do

@@ -80,7 +80,7 @@ defmodule Matcher do
   defmacro match_method(call, path, options, do: block) do
     # Throw warning when strange conditions occur
     unless String.starts_with?(path, "/") do
-      IO.puts "WARNING: invalid path: #{path} does not start with a `/`"
+      IO.puts("WARNING: invalid path: #{path} does not start with a `/`")
     end
 
     # Implementation
@@ -285,8 +285,9 @@ defmodule Matcher do
             functor.(acc, {received_type, received_subtype}, media_range_tuple)
         end)
       end)
+
       # |> IO.inspect(label: "Used accept maps")
-     end)
+    end)
   end
 
   defp sort_and_group_accept_headers(accept) do

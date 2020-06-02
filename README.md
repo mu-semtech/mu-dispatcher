@@ -17,7 +17,8 @@ The Dispatcher runs as an application in which the `Dispatcher` module is overri
     1. [Basic forwarding](#Basic-forwarding)
     2. [Forwarding paths](#Forwarding-paths)
     3. [Matching on verb](#Matching-on-verb)
-    3. [Matching Accept headers](#Matching-Accept-headers)
+    4. [Matching on host](#Matching-on-host)
+    5. [Matching Accept headers](#Matching-Accept-headers)
 4. [Fallback routes and 404 pages](#Fallback-routes-and-404-pages)
 5. [Manipulating responses](#Manipulating-responses)
 6. [How-to / Extra information](#Extra-information)
@@ -228,6 +229,49 @@ end
 ```
 
 In this configuration the first case that matches wins.  If the user prefers json that's what they'll get, the same for gif or jpeg.
+
+### Matching on host
+
+Dispatching may occur based on a hostname.  Both an array-format as well as a string-format are supported to match on a host.  The string-format currently supports matching only, the array format also allows extraction.
+
+In order to reply only to calls coming in for `api.redpencil.io`, you can use the rule:
+
+```elixir
+  get "/employees", %{ host: ["io", "redpencil", "api"] } do
+    ...
+  end
+```
+
+Or, for simple matches like this, you can use a simplified API like:
+
+```elixir
+  get "/employees", %{ host: "api.redpencil.io" } do
+    ...
+  end
+```
+
+This simplified syntax is internally converted into an array match.  Wildcards are supported too:
+
+```elixir
+  get "/employees", %{ host: "*.redpencil.io" } do
+    ...
+  end
+```
+
+This wildcard will match `redpencil.io`, `api.redpencil.io`, `dev.api.redpencil.io`, etc.
+
+If you need to access a part of the API, revert back to the array syntax and define a variable:
+
+```elixir
+  get "/employees", %{ host: ["io", "redpencil", subdomain | subsubdomains] }
+    IO.inspect( subdomain, "First subdomain" )
+    IO.inspect( subsubdomains, "Array of subdomains under subdomain" )
+    ...
+  end
+```
+
+This specific implementation does require at least one subdomain and it will thus not match `redpencil.io`.
+
 
 ### Fallback routes and 404 pages
 

@@ -24,11 +24,11 @@ The Dispatcher runs as an application in which the `Dispatcher` module is overri
     1. [Host an EmberJS app](#Host-an-EmberJS-app)
     2. [External API CORS headers](#External-API-CORS-headers)
     3. [Provide 404 pages](#Provide-404-pages)
-    4. [Architecture](#Architecture)
-        1. [forwarding connections with plug_mint_proxy](#Forwarding-Connections)
-        2. [Wiring with Plug](#Wiring-with-Plug)
-        3. [Header manipulation](#Header-manipulation)
-        4. [Matcher](#Matcher)
+7. [Architecture](#Architecture)
+    1. [forwarding connections with plug_mint_proxy](#Forwarding-Connections)
+    2. [Wiring with Plug](#Wiring-with-Plug)
+    3. [Header manipulation](#Header-manipulation)
+    4. [Matcher](#Matcher)
 
 ### Configuration
 
@@ -424,20 +424,20 @@ defmodule Dispatcher do
 end
 ```
 
-### Architecture
+## Architecture
 
 The Dispatcher offers support for forwarding connections and for dispatching connections.
 
-#### Forwarding Connections
+### Forwarding Connections
 
 Forwarding connections is built on top of `plug_mint_proxy` which uses the Mint library for efficient creation of requests.  Request accepting is based on Cowboy 2 which allows for http/2 support.
 
-#### Wiring with Plug
+### Wiring with Plug
 [Plug]((https://github.com/elixir-plug/plug)) expects call to be matched using its own matcher and dispatcher.
 This library provides some extra support.  
 Although tying this in within Plug might be simple, the request is dispatched to our own matcher in [plug_router_dispatcher.ex](./lib/plug_router_dispatcher.ex).
 
-#### Header manipulation
+### Header manipulation
 
 The dispatcher knows about certain header manipulations to smoothen out configuration.  These are configured using `plug_mint_proxy`'s manipulators as seen in [the Proxy module](./lib/proxy.ex)
 
@@ -445,7 +445,7 @@ The dispatcher knows about certain header manipulations to smoothen out configur
   - [Manipulators.RemoveAcceptEncodingHeader](./lib/manipulators/remove_accept_encoding_header.ex): Removes the `accept_encoding` header from the request as encryption is handled by the identifier and should not be hanlded by backend services.
   - [Manipulators.AddVaryHeader](./lib/add_vary_header.ex): Adds the `vary` header with value `"accept, cookie"` so both of these are taken into account during incidental caching in between links or the user's browser.
 
-#### Matcher
+### Matcher
 
 [The Matcher module](./lib/matcher.ex) contains the bulk of the logic in this component.  It parses the request Accept header and parses the accept types inside of it.  It also parses the supplied accept types and searches for an optimal solution to dispatch to.
 

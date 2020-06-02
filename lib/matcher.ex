@@ -13,6 +13,10 @@ defmodule Matcher do
           fn a, b, c, d -> do_match(a, b, c, d) end
         )
       end
+
+      @matchers []
+
+      @before_compile Matcher
     end
   end
 
@@ -65,10 +69,89 @@ defmodule Matcher do
   end
 
   defmacro last_match do
+    message =
+      "The last_match statement is no longer needed, may remove it from your dispatcher.ex"
+
     quote do
-      def do_match(_, _, _, _) do
-        {:skip}
+      IO.puts(unquote(message))
+    end
+  end
+
+  defmacro match_method(call, path, options, do: block) do
+    quote do
+      @matchers [
+        {unquote(Macro.escape(call)), unquote(Macro.escape(path)), unquote(Macro.escape(options)),
+         unquote(Macro.escape(block))}
+        | @matchers
+      ]
+    end
+  end
+
+  defmacro __before_compile__(_env) do
+    matchers =
+      Module.get_attribute(__CALLER__.module, :matchers)
+      # |> IO.inspect(label: "Discovered matchers")
+      |> Enum.map(fn {call, path, options, block} ->
+        make_match_method(call, path, options, block, __CALLER__)
+      end)
+
+    last_match_def =
+      quote do
+        def do_match(_, _, _, _) do
+          {:skip}
+        end
       end
+
+    [last_match_def | matchers]
+    |> Enum.reverse()
+  end
+
+  defp extract_value(key, caller) do
+    case key do
+      {:@, _, [{name, _, _}]} ->
+        Module.get_attribute(caller.module, name)
+        |> Macro.escape()
+
+      _ ->
+        key
+    end
+  end
+
+  defp rework_options_for_host(options) do
+    case options do
+      {:%{}, any, list} ->
+        if List.keymember?(list, :host, 0) do
+          {_key, value} = List.keyfind(list, :host, 0)
+
+          if is_binary(value) do
+            # Okay, so the host key is a string.  We should cut it
+            # into pieces to make it look like an array.
+            new_host =
+              case String.split(value, ".") do
+                ["*", thing | rest] ->
+                  Enum.reverse([{:|, [], [thing, {:_, [], Elixir}]} | rest])
+
+                ["*"] ->
+                  quote do
+                    [_]
+                  end
+
+                things ->
+                  Enum.reverse(things)
+              end
+
+            new_list = [{:host, new_host} | List.keydelete(list, :host, 0)]
+
+            {:%{}, any, new_list}
+          else
+            options
+          end
+        else
+          options
+        end
+
+      _ ->
+        options
     end
   end
 
@@ -77,7 +160,14 @@ defmodule Matcher do
   # def do_match( "GET", "/hello/erika/", %{ accept: %{} }, conn ) do
   #    ...
   # end
-  defmacro match_method(call, path, options, do: block) do
+  def make_match_method(call, path, options, block, caller) do
+    path = extract_value(path, caller)
+
+    options =
+      options
+      |> extract_value(caller)
+      |> rework_options_for_host()
+
     # Throw warning when strange conditions occur
     unless String.starts_with?(path, "/") do
       IO.puts("WARNING: invalid path: #{path} does not start with a `/`")

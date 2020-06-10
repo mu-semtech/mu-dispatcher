@@ -11,8 +11,7 @@ The Dispatcher runs as an application in which the `Dispatcher` module is overri
 2. [Supported API](#Supported-API)
     1. [Matcher](#Use-Matcher)
     2. [Http Verbs](#Http-verbs)
-    3. [last_match](#last_match)
-    4. [define_accept_types](#define_accept_types)
+    3. [define_accept_types](#define_accept_types)
 3. [forwarding requests](#Forwarding-requests)
     1. [Basic forwarding](#Basic-forwarding)
     2. [Forwarding paths](#Forwarding-paths)
@@ -36,7 +35,7 @@ The Dispatcher runs as an application in which the `Dispatcher` module is overri
 The disptacher is configured using the dispatcher.ex file in a [mu-project](https://github.com/mu-semtech/mu-project).
 
 The basic (default) configuration of the mu-dispatcher is an Elixir module named `Dispatcher` which uses the `Matcher` functionality.  
-An empty set of accept types is required (`define_accept_types []`) and the last match (`last_match`) must be supplied.
+An empty set of accept types is required (`define_accept_types []`).
 
 ```elixir
 defmodule Dispatcher do
@@ -44,8 +43,6 @@ defmodule Dispatcher do
   define_accept_types []
 
   ...
-
-  last_match
 end
 ```
 
@@ -73,10 +70,6 @@ Implements a specific matcher on the http verb with the corresponding name.  The
   - conn: Plug connection to be forwarded or responded to
   - path: Often the `path` as input is set as `"/something/*path"` in which case the `path` variable contains unused path segments
 
-### last_match
-
-Set right after the last clause.  Ensures the matches iterate.
-
 ### define_accept_types
 
 Provides a way to match the accept types to more readable terms so matching can happen in an easy and consistent manner.  Receives a property array describing each of the keys that will be used and their corresponding accept headers.  Wildcards are allowed in this specification.
@@ -97,8 +90,6 @@ defmodule Dispatcher do
   match "/sessions", _ do
     forward conn, [], "http://sessionsservice/login"
   end
-
-  last_match
 end
 ```
 
@@ -113,8 +104,6 @@ defmodule Dispatcher do
     IO.inspect( conn, label: "conn for /sessions" )
     forward conn, [], "http://sessionsservice/login"
   end
-
-  last_match
 end
 ```
 
@@ -130,8 +119,6 @@ defmodule Dispatcher do
   match "/widgets/*path", _ do
     forward conn, path, "http://resource/widgets"
   end
-
-  last_match
 end
 ```
 
@@ -150,8 +137,6 @@ defmodule Dispatcher do
   post "/sessions", _ do
     forward conn, [], "http://sessionsservice/login"
   end
-
-  last_match
 end
 ```
 
@@ -177,8 +162,6 @@ defmodule Dispatcher do
   match "/images/*path", %{ accept: "application/json" } do
     forward conn, path, "http://resource/images/"
   end
-
-  last_match
 end
 ```
 
@@ -195,8 +178,6 @@ defmodule Dispatcher do
   match "/images/*path", %{ accept: %{ json: true } } do
     forward conn, path, "http://resource/images"
   end
-
-  last_match
 end
 ```
 
@@ -207,7 +188,7 @@ defmodule Dispatcher do
   use Matcher
 
   define_accept_types [
-    json: [ "application/json", "application/vnd.api+json ],
+    json: [ "application/json", "application/vnd.api+json" ],
     img: [ "image/jpg", "image/jpeg", "image/png" ],
     gif: [ "image/gif" ]
   ]
@@ -223,8 +204,6 @@ defmodule Dispatcher do
   get "/images/*path", %{ accept: %{ gif: true } } do
     forward conn, path, "http://gifs/images"
   end
-
-  last_match
 end
 ```
 
@@ -319,8 +298,6 @@ defmodule Dispatcher do
   get "_", %{ last_call: true, accept: %{ html: true } } do
     send_resp( conn, 404, "<html><head><title>404 - Not Found</title></head><body><h1>404 - Page not found</h1></body></html>" )
   end
-
-  last_match
 end
 ```
 
@@ -352,8 +329,6 @@ defmodule Dispatcher do
   match "_", %{ last_call: true, accept: %{ json: true } } do
     send_resp( conn, 404, "{ \"error\": { \"code\": 404, \"message\": \"Route not found.  See config/dispatcher.ex\" } }" )
   end
-
-  last_match
 end
 ```
 
@@ -394,8 +369,6 @@ defmodule Dispatcher do
   match "_", %{ last_call: true, accept: %{ json: true } } do
     send_resp( conn, 404, "{ \"error\": { \"code\": 404, \"message\": \"Route not found.  See config/dispatcher.ex\" } }" )
   end
-
-  last_match
 end
 ```
 
@@ -414,8 +387,6 @@ defmodule Dispatcher do
     |> Plug.Conn.put_resp_header( "access-control-allow-methods", "*" )
     |> send_resp( 200, "{ \"message\": \"ok\" }" )
   end
-
-  last_match
 end
 ```
 
@@ -463,8 +434,6 @@ defmodule Dispatcher do
   get "_", %{ last_call: true, accept: %{ gif: true } } do
     forward conn, [], "http://static/404.gif"
   end
-
-  last_match
 end
 ```
 
@@ -500,6 +469,6 @@ High-level the dispatching works as follows:
 3. Match each (A) with the set of `define_accept_types` noting that a `*` wildmatch may occur in both, thus resulting in (B).
 4. For each (B) try to find a matched solution
 5. If a solution is found, return it
-6. If no solution is found, try to find a matched solution with the `last_match` option set to true
+6. If no solution is found, try to find a matched solution with the `last_call` option set to true
 
 

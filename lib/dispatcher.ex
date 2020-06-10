@@ -47,5 +47,4 @@ defmodule Dispatcher do
     Plug.Conn.send_resp conn, 404, "No response found"
   end
 
-  last_match()
 end

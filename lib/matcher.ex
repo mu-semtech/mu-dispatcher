@@ -6,10 +6,16 @@ defmodule Matcher do
       import Plug.Conn, only: [send_resp: 3]
       import Proxy, only: [forward: 3]
 
+      def layers do
+        [ :service, :last_call ]
+      end
+      defoverridable layers: 0
+
       def dispatch(conn) do
         Matcher.dispatch_call(
           conn,
           fn -> accept_types() end,
+          fn -> layers() end,
           fn a, b, c, d -> do_match(a, b, c, d) end
         )
       end
@@ -249,6 +255,8 @@ defmodule Matcher do
     end
   end
 
+  # Defines a mapping from verbal accept types to specific accept
+  # types
   defmacro define_accept_types(received_accept_types) do
     quote do
       def accept_types do
@@ -257,8 +265,17 @@ defmodule Matcher do
     end
   end
 
+  # Defines the layers through which the dispatcher should process
+  defmacro define_layers(layers) do
+    quote do
+      def layers do
+        unquote(layers)
+      end
+    end
+  end
+
   # Call dispatching
-  def dispatch_call(conn, accept_types, call_handler) do
+  def dispatch_call(conn, accept_types, layers_fn, call_handler) do
     # Extract core info
     {method, path, accept_header, host} = extract_core_info_from_conn(conn)
     # |> IO.inspect(label: "extracted header")
@@ -270,45 +287,33 @@ defmodule Matcher do
 
     # |> IO.inspect(label: "accept hashes")
 
-    # For each set of media types, go over the defined calls searching
-    # for a handled response.
-    first_run =
-      accept_hashes
-      |> Enum.find_value(fn accept ->
-        options = %{accept: accept, host: host}
+    # layers |> IO.inspect(label: "layers" )
+    # Try to find a solution in each of the layers
+    layers = layers_fn.()
+    response_conn =
+      layers
+      |> Enum.find_value(fn layer ->
+        # For each set of media types, go over the defined calls searching
+        # for a handled response.
+        layer_response =
+          accept_hashes
+          |> Enum.find_value(fn accept ->
+            options =
+              %{accept: accept, host: host, layer: layer}
+              # Also use old format of layer_name: true
+              |> Map.put(layer, true)
 
-        case call_handler.(method, path, options, conn) do
-          {:skip} -> nil
-          conn -> conn
-        end
+            case call_handler.(method, path, options, conn) do
+              {:skip} -> nil
+              conn -> conn
+            end
+          end)
+
+        layer_response
       end)
 
-    case first_run do
-      nil ->
-        # If no one handled the response, send out a last call for
-        # response handling.
-        # IO.puts("Going for last call")
 
-        accept_hashes
-        # |> IO.inspect(label: "Accept hashes for last call")
-        |> Enum.find_value(fn accept ->
-          options = %{accept: accept, host: host, last_call: true}
-
-          # IO.inspect(method, label: "trying to call call_handler with method")
-          # IO.inspect(path, label: "trying to call call_handler with path")
-          # IO.inspect(options, label: "trying to call call_handler with options")
-          # IO.inspect(conn, label: "trying to call call_handler with conn")
-
-          case call_handler.(method, path, options, conn) do
-            {:skip} -> nil
-            conn -> conn
-          end
-        end)
-
-      conn ->
-        # This case is when we have received a connection
-        conn
-    end
+    response_conn
   end
 
   @spec extract_core_info_from_conn(Plug.Conn) ::

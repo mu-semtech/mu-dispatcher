@@ -1,3 +1,5 @@
+alias Dispatcher.Log
+
 defmodule Matcher do
   defmacro __using__(_opts) do
     quote do
@@ -290,9 +292,13 @@ defmodule Matcher do
     # layers |> IO.inspect(label: "layers" )
     # Try to find a solution in each of the layers
     layers = layers_fn.()
+    |> Log.inspect(:log_available_layers, "Available layers")
+
     response_conn =
       layers
       |> Enum.find_value(fn layer ->
+        Log.log(:log_layer_start_processing, "Starting to process layer #{layer}")
+
         # For each set of media types, go over the defined calls searching
         # for a handled response.
         layer_response =
@@ -309,9 +315,15 @@ defmodule Matcher do
             end
           end)
 
+        Log.log(
+          :log_layer_matching,
+          "Layer #{layer} gave response? #{(layer_response && "yes") || "no"}"
+        )
+
         layer_response
       end)
 
+    Log.log(:log_layer_matching, "Found response in layers? #{(response_conn && "yes") || "no"}")
 
     response_conn
   end

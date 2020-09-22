@@ -37,6 +37,15 @@ config :plug_mint_proxy,
   log_request_body: CH.system_boolean("LOG_REQUEST_BODY"),
   log_response_body: CH.system_boolean("LOG_RESPONSE_BODY")
 
+config :dispatcher,
+  author: :"mu-semtech",
+  # log the available layers on each call
+  log_available_layers: CH.system_boolean("LOG_AVAILABLE_LAYERS"),
+  # log whenever a layer starts processing
+  log_layer_start_processing: CH.system_boolean("LOG_LAYER_START_PROCESSING"),
+  # log whenever a layer matched, and if no matching layer was found
+  log_layer_matching: CH.system_boolean("LOG_LAYER_MATCHING")
+
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment
 # by uncommenting the line below and defining dev.exs, test.exs and such.

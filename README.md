@@ -283,19 +283,19 @@ defmodule Dispatcher do
     forward conn, path, "http://gifs/images"
   end
 
-  get "_", %{ last_call: true, accept: %{ json: true } } do
+  get "/*_", %{ last_call: true, accept: %{ json: true } } do
     send_resp( conn, 404, "{ \"error\": { \"code\": 404, \"message\": \"Route not found.  See config/dispatcher.ex\" } }" )
   end
 
-  get "_", %{ last_call: true, accept: %{ image: true } } do
+  get "/*_", %{ last_call: true, accept: %{ image: true } } do
     forward conn, [], "http://images/404"
   end
 
-  get "_", %{ last_call: true, accept: %{ text: true } } do
+  get "/*_", %{ last_call: true, accept: %{ text: true } } do
     send_resp( conn, 404, "404 - page not found\n\nSee config/dispatcher.ex" )
   end
 
-  get "_", %{ last_call: true, accept: %{ html: true } } do
+  get "/*_", %{ last_call: true, accept: %{ html: true } } do
     send_resp( conn, 404, "<html><head><title>404 - Not Found</title></head><body><h1>404 - Page not found</h1></body></html>" )
   end
 end
@@ -326,7 +326,7 @@ defmodule Dispatcher do
     forward conn, path, "http://resource/images"
   end
 
-  match "_", %{ last_call: true, accept: %{ json: true } } do
+  match "/*_", %{ last_call: true, accept: %{ json: true } } do
     send_resp( conn, 404, "{ \"error\": { \"code\": 404, \"message\": \"Route not found.  See config/dispatcher.ex\" } }" )
   end
 end
@@ -366,7 +366,7 @@ defmodule Dispatcher do
     forward conn, [], "http://frontend/index.html"
   end
 
-  match "_", %{ last_call: true, accept: %{ json: true } } do
+  match "/*_", %{ last_call: true, accept: %{ json: true } } do
     send_resp( conn, 404, "{ \"error\": { \"code\": 404, \"message\": \"Route not found.  See config/dispatcher.ex\" } }" )
   end
 end
@@ -411,27 +411,27 @@ defmodule Dispatcher do
 
   ... # other calls here
 
-  get "_", %{ last_call: true, accept: %{ json: true } } do
+  get "/*_", %{ last_call: true, accept: %{ json: true } } do
     send_resp( conn, 404, "{ \"error\": { \"code\": 404, \"message\": \"Route not found.  See config/dispatcher.ex\" } }" )
   end
 
-  get "_", %{ last_call: true, accept: %{ text: true } } do
+  get "/*_", %{ last_call: true, accept: %{ text: true } } do
     send_resp( conn, 404, "404 - page not found\n\nSee config/dispatcher.ex" )
   end
 
-  get "_", %{ last_call: true, accept: %{ html: true } } do
+  get "/*_", %{ last_call: true, accept: %{ html: true } } do
     send_resp( conn, 404, "<html><head><title>404 - Not Found</title></head><body><h1>404 - Page not found</h1></body></html>" )
   end
 
-  get "_", %{ last_call: true, accept: %{ jpeg: true } } do
+  get "/*_", %{ last_call: true, accept: %{ jpeg: true } } do
     forward conn, [], "http://static/404.jpeg"
   end
 
-  get "_", %{ last_call: true, accept: %{ png: true } } do
+  get "/*_", %{ last_call: true, accept: %{ png: true } } do
     forward conn, [], "http://static/404.png"
   end
 
-  get "_", %{ last_call: true, accept: %{ gif: true } } do
+  get "/*_", %{ last_call: true, accept: %{ gif: true } } do
     forward conn, [], "http://static/404.gif"
   end
 end

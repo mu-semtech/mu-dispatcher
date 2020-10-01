@@ -324,6 +324,8 @@ defmodule Matcher do
     layers = layers_fn.()
     |> Log.inspect(:log_available_layers, "Available layers")
 
+    reverse_host = Enum.reverse( host )
+
     response_conn =
       layers
       |> Enum.find_value(fn layer ->
@@ -335,7 +337,7 @@ defmodule Matcher do
           accept_hashes
           |> Enum.find_value(fn accept ->
             options =
-              %{accept: accept, host: host, layer: layer}
+              %{accept: accept, host: host, reverse_host: reverse_host, layer: layer}
               # Also use old format of layer_name: true
               |> Map.put(layer, true)
 

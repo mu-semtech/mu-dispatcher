@@ -163,6 +163,35 @@ defmodule Matcher do
     end
   end
 
+  defp rework_options_for_array_accept(options) do
+    case options do
+      {:%{}, any, list} ->
+        if List.keymember?(list, :accept, 0) do
+          {_key, value} = List.keyfind(list, :accept, 0)
+
+          new_accept =
+            case value do
+              [item] -> # convert item
+                {:%{}, [], [{item, true}]}
+              [_item | _rest] ->
+                raise "Multiple items in accept arrays are not supported."
+              {:%{}, _, _} ->
+                value
+            end
+
+          new_list =
+            list
+            |> Keyword.drop( [:accept] )
+            |> Keyword.merge( [accept: new_accept] )
+
+          {:%{}, any, new_list}
+        else
+          options
+        end
+      _ -> options
+    end
+  end
+
   # Builds a method in the form of:
   #
   # def do_match( "GET", "/hello/erika/", %{ accept: %{} }, conn ) do
@@ -175,6 +204,7 @@ defmodule Matcher do
       options
       |> extract_value(caller)
       |> rework_options_for_host()
+      |> rework_options_for_array_accept()
 
     # Throw warning when strange conditions occur
     unless String.starts_with?(path, "/") do

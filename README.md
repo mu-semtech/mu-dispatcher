@@ -446,7 +446,7 @@ The Dispatcher offers support for forwarding connections and for dispatching con
 Forwarding connections is built on top of `plug_mint_proxy` which uses the Mint library for efficient creation of requests.  Request accepting is based on Cowboy 2 which allows for http/2 support.
 
 ### Wiring with Plug
-[Plug]((https://github.com/elixir-plug/plug)) expects call to be matched using its own matcher and dispatcher.
+[Plug](https://github.com/elixir-plug/plug) expects call to be matched using its own matcher and dispatcher.
 This library provides some extra support.  
 Although tying this in within Plug might be simple, the request is dispatched to our own matcher in [plug_router_dispatcher.ex](./lib/plug_router_dispatcher.ex).
 

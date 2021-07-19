@@ -2,15 +2,20 @@ alias Dispatcher.Log
 
 defmodule Matcher do
   defmacro __using__(_opts) do
+    # Set this attribute _BEFORE_ any code is ran
+    Module.register_attribute(__CALLER__.module, :websocket, accumulate: true)
+
     quote do
       require Matcher
       import Matcher
+      import Plug.Router, only: [forward: 2]
       import Plug.Conn, only: [send_resp: 3]
       import Proxy, only: [forward: 3]
 
       def layers do
-        [ :service, :last_call ]
+        [:service, :last_call]
       end
+
       defoverridable layers: 0
 
       def dispatch(conn) do
@@ -25,6 +30,34 @@ defmodule Matcher do
       @matchers []
 
       @before_compile Matcher
+    end
+  end
+
+  defmacro ws(conn, host) do
+    # host = "ws://localhost:8000/test"
+
+    parsed =
+      URI.parse(host)
+      |> Log.inspect(:log_ws_all, label: "Creating websocket route")
+
+    id = for _ <- 1..24, into: "", do: <<Enum.random('0123456789abcdef')>>
+
+    host = parsed.host || "localhost"
+    port = parsed.port || 80
+    path = parsed.path || "/"
+
+    Module.put_attribute(__CALLER__.module, :websocket, %{
+      host: host,
+      port: port,
+      path: path,
+      id: id
+    })
+
+    # Return redirect things
+    quote do
+      unquote(conn)
+      |> Plug.Conn.resp(:found, "")
+      |> Plug.Conn.put_resp_header("location", "/ws?target=" <> unquote(id))
     end
   end
 
@@ -98,7 +131,6 @@ defmodule Matcher do
   defmacro __before_compile__(_env) do
     matchers =
       Module.get_attribute(__CALLER__.module, :matchers)
-      # |> IO.inspect(label: "Discovered matchers")
       |> Enum.map(fn {call, path, options, block} ->
         make_match_method(call, path, options, block, __CALLER__)
       end)
@@ -110,7 +142,18 @@ defmodule Matcher do
         end
       end
 
-    [last_match_def | matchers]
+    socket_dict_f =
+      quote do
+        def websockets() do
+          Enum.reduce(@websocket, %{}, fn x, acc -> Map.put(acc, x.id, x) end)
+        end
+
+        def get_websocket(id) do
+          Enum.find(@websocket, fn x -> x.id == id end)
+        end
+      end
+
+    [socket_dict_f, last_match_def | matchers]
     |> Enum.reverse()
   end
 
@@ -171,24 +214,29 @@ defmodule Matcher do
 
           new_accept =
             case value do
-              [item] -> # convert item
+              # convert item
+              [item] ->
                 {:%{}, [], [{item, true}]}
+
               [_item | _rest] ->
                 raise "Multiple items in accept arrays are not supported."
+
               {:%{}, _, _} ->
                 value
             end
 
           new_list =
             list
-            |> Keyword.drop( [:accept] )
-            |> Keyword.merge( [accept: new_accept] )
+            |> Keyword.drop([:accept])
+            |> Keyword.merge(accept: new_accept)
 
           {:%{}, any, new_list}
         else
           options
         end
-      _ -> options
+
+      _ ->
+        options
     end
   end
 
@@ -222,8 +270,6 @@ defmodule Matcher do
             "_" -> Macro.var(:_, nil)
             str -> str
           end).()
-
-    # |> IO.inspect(label: "call name")
 
     # Creates the variable(s) for the parsed path
     process_derived_path_elements = fn elements ->
@@ -310,7 +356,6 @@ defmodule Matcher do
   def dispatch_call(conn, accept_types, layers_fn, call_handler) do
     # Extract core info
     {method, path, accept_header, host} = extract_core_info_from_conn(conn)
-    # |> IO.inspect(label: "extracted header")
 
     # Extract core request info
     accept_hashes =
@@ -321,10 +366,11 @@ defmodule Matcher do
 
     # layers |> IO.inspect(label: "layers" )
     # Try to find a solution in each of the layers
-    layers = layers_fn.()
-    |> Log.inspect(:log_available_layers, "Available layers")
+    layers =
+      layers_fn.()
+      |> Log.inspect(:log_available_layers, "Available layers")
 
-    reverse_host = Enum.reverse( host )
+    reverse_host = Enum.reverse(host)
 
     response_conn =
       layers
@@ -432,7 +478,7 @@ defmodule Matcher do
   defp sort_and_group_accept_headers(accept) do
     accept
     |> safe_parse_accept_header()
-    # |> IO.inspect(label: "parsed_accept_header")
+    |> IO.inspect(label: "parsed_accept_header")
     |> Enum.sort_by(&elem(&1, 3))
     |> Enum.group_by(&elem(&1, 3))
     |> Map.to_list()

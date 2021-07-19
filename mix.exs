@@ -10,9 +10,9 @@ defmodule Dispatcher.Mixfile do
   # Type `mix help compile.app` for more information
   def application do
     [
-      extra_applications: [:logger, :plug_mint_proxy, :cowboy, :plug, :accept],
+      extra_applications: [:logger, :plug_mint_proxy, :cowboy, :plug],
       mod: {MuDispatcher, []},
-      env: []
+      env: [],
     ]
   end
 
@@ -27,9 +27,14 @@ defmodule Dispatcher.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-      {:plug_mint_proxy, git: "https://github.com/madnificent/plug-mint-proxy.git", tag: "v0.0.2"},
+      {:plug_mint_proxy,
+       git: "https://github.com/madnificent/plug-mint-proxy.git", tag: "v0.0.2"},
+      # {:plug, "~> 1.10.4"},
+      {:plug_cowboy, "~> 2.4.0"},
+      {:gun, "~> 2.0.0-rc.2"},
       {:accept, "~> 0.3.5"},
-      {:observer_cli, "~> 1.5"}
+      {:observer_cli, "~> 1.5"},
+      {:exsync, "~> 0.2", only: :dev}
     ]
   end
 end

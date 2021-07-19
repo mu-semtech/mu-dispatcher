@@ -1,3 +1,5 @@
+alias Dispatcher.Log
+
 defmodule PlugRouterDispatcher do
   use Plug.Router
 
@@ -6,6 +8,6 @@ defmodule PlugRouterDispatcher do
   plug(:dispatch)
 
   match _ do
-    Dispatcher.dispatch( conn )
+    Dispatcher.dispatch(conn)
   end
 end

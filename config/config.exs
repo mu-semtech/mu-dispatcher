@@ -44,7 +44,11 @@ config :dispatcher,
   # log whenever a layer starts processing
   log_layer_start_processing: CH.system_boolean("LOG_LAYER_START_PROCESSING"),
   # log whenever a layer matched, and if no matching layer was found
-  log_layer_matching: CH.system_boolean("LOG_LAYER_MATCHING")
+  log_layer_matching: CH.system_boolean("LOG_LAYER_MATCHING"),
+  log_ws_all: CH.system_boolean("LOG_WS_ALL"),
+  log_ws_backend: CH.system_boolean("LOG_WS_BACKEND"),
+  log_ws_frontend: CH.system_boolean("LOG_WS_FRONTEND"),
+  log_ws_unhandled: CH.system_boolean("LOG_WS_UNHANDLED")
 
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment

@@ -27,6 +27,7 @@ defmodule Dispatcher.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
+      {:cowboy_ws_proxy, git: "https://github.com/ajuvercr/elixir-cowboy-ws-proxy-handler.git", tag: "v0.1"},
       {:plug_mint_proxy,
        git: "https://github.com/madnificent/plug-mint-proxy.git", tag: "v0.0.2"},
       # {:plug, "~> 1.10.4"},

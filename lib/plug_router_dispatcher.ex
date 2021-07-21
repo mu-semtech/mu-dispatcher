@@ -1,5 +1,3 @@
-alias Dispatcher.Log
-
 defmodule PlugRouterDispatcher do
   use Plug.Router
 

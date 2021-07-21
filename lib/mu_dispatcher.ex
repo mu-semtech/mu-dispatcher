@@ -11,7 +11,7 @@ defmodule MuDispatcher do
 
     children = [
       # this is kinda strange, but the 'plug:' field is not used when 'dispatch:' is provided (my understanding)
-      {Plug.Adapters.Cowboy,
+      {Plug.Cowboy,
        scheme: :http, plug: PlugRouterDispatcher, options: [dispatch: dispatch, port: port]}
     ]
 
@@ -21,10 +21,24 @@ defmodule MuDispatcher do
   end
 
   defp dispatch do
+    default = %{
+      host: "localhost",
+      port: 80,
+      path: "/"
+    }
+
+    f = fn req ->
+      {_, target} =
+        :cowboy_req.parse_qs(req)
+        |> Enum.find(fn {head, _} -> head == "target" end)
+
+      Dispatcher.get_websocket(target)
+    end
+
     [
       {:_,
        [
-         {"/ws/[...]", WebsocketHandler, %{}},
+         {"/ws/[...]", WsHandler, {f, default}},
          {:_, Plug.Cowboy.Handler, {PlugRouterDispatcher, []}}
        ]}
     ]

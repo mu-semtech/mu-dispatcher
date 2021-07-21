@@ -2,10 +2,6 @@ defmodule Dispatcher.Log do
   @type log_name ::
           :log_layer_start_processing
           | :log_layer_matching
-          | :log_ws_all
-          | :log_ws_backend
-          | :log_ws_frontend
-          | :log_ws_unhandled
 
   @spec log(log_name, any()) :: any()
   def log(name, content) do

@@ -8,7 +8,6 @@ defmodule Matcher do
     quote do
       require Matcher
       import Matcher
-      import Plug.Router, only: [forward: 2]
       import Plug.Conn, only: [send_resp: 3]
       import Proxy, only: [forward: 3]
 
@@ -478,7 +477,7 @@ defmodule Matcher do
   defp sort_and_group_accept_headers(accept) do
     accept
     |> safe_parse_accept_header()
-    |> IO.inspect(label: "parsed_accept_header")
+    # |> IO.inspect(label: "parsed_accept_header")
     |> Enum.sort_by(&elem(&1, 3))
     |> Enum.group_by(&elem(&1, 3))
     |> Map.to_list()

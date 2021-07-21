@@ -3,9 +3,9 @@ defmodule Manipulators.RemoveAcceptEncodingHeader do
 
   @impl true
   def headers(headers, connection) do
-    # headers =
-    #   headers
-    #   |> Enum.reject( &match?( {"accept_encoding", _}, &1 ) )
+    headers =
+      headers
+      |> Enum.reject( &match?( {"accept_encoding", _}, &1 ) )
     {headers, connection}
   end
 

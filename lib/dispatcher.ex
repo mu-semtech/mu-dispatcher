@@ -41,10 +41,10 @@ defmodule Dispatcher do
 
   # Websocket example route
   # This forwards to /ws?target=<...>
-  # Then forwards websocket from /ws?target=<...> to ws://localhost:7999
+  # Then forwards websocket from /ws?target=<...> to ws://push-service-ws/
 
-  match "/ws2" do
-    ws(conn, "ws://localhost:7999")
+  match "/push-service/ws" do
+    ws conn, "ws://push-service-ws/"
   end
 
 

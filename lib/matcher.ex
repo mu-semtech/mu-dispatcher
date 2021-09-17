@@ -56,7 +56,7 @@ defmodule Matcher do
     quote do
       unquote(conn)
       |> Plug.Conn.resp(:found, "")
-      |> Plug.Conn.put_resp_header("location", "/ws?target=" <> unquote(id))
+      |> Plug.Conn.put_resp_header("location", "/.mu/ws?target=" <> unquote(id))
     end
   end
 

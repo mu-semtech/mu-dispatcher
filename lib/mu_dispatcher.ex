@@ -38,7 +38,7 @@ defmodule MuDispatcher do
     [
       {:_,
        [
-         {"/ws/[...]", WsHandler, {f, default}},
+         {"/.mu/ws/[...]", WsHandler, {f, default}},
          {:_, Plug.Cowboy.Handler, {PlugRouterDispatcher, []}}
        ]}
     ]

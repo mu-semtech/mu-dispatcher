@@ -259,12 +259,12 @@ An example rule is as follows:
 
 ```elixir
   match "/websocket" do
-    ws(conn, "ws://localhost:7999")
+    ws conn, "ws://push-service-ws/"
   end
 ```
 
-Any websocket connections on `/websocket` get's redirected to `/ws?target=<something>`.
-The Gun library listens to websockets on `/ws` which makes everything work.
+Any websocket connections on `/websocket` get's redirected to `/.mu/ws?target=<something>`.
+The Gun library listens to websockets on `/.mu/ws` which makes everything work.
 The `target` query parameter tells Gun what host to forward to.
 
 

@@ -24,7 +24,7 @@ steps:
 - name: push-feature-build
   image: plugins/docker
   settings:
-    repo: ${DRONE_REPO_NAMESPACE}/${DRONE_REPO_NAME}
+    repo: ${DRONE_REPO_NAMESPACE/mu-semtech/semtech}/${DRONE_REPO_NAME%-service}
     tags: ${DRONE_BRANCH/\//-}
     username:
       from_secret: docker_username

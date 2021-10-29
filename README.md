@@ -18,6 +18,7 @@ The Dispatcher runs as an application in which the `Dispatcher` module is overri
     3. [Matching on verb](#Matching-on-verb)
     4. [Matching on host](#Matching-on-host)
     5. [Matching Accept headers](#Matching-Accept-headers)
+    6. [Layers](#Layers)
 4. [Fallback routes and 404 pages](#Fallback-routes-and-404-pages)
 5. [Manipulating responses](#Manipulating-responses)
 6. [How-to / Extra information](#Extra-information)
@@ -331,6 +332,34 @@ defmodule Dispatcher do
   end
 end
 ```
+
+### Layers
+
+Layers help with organizing your forwarding rules.
+
+You can define them like this:
+`define_layers [ :api, :frontend ]`!!!Order matters!!!
+
+Lets look at an example:
+```elixir
+define_layers [ :api, :frontend ]
+
+define_accept_types [
+    html: ["text/html", "application/xhtml+html"],
+    json: ["application/json", "application/vnd.api+json"],
+]
+
+match "/*path", %{ accept: %{html: true}, layer: :api} do
+    Proxy.forward conn, path, "http://frontend"
+end
+
+match "/*path", %{ accept: %{json: true}, layer: :api} do
+    Proxy.forward conn, path, "http://api"
+end
+
+```
+
+Lets say a request comes in from a browser looking for the index page. First the dispatcher will traverse the `api` layer (since its the first one defined).  When nothing is found it will move on to the next layer (the `html` layer) where it will find a match
 
 ## Extra information
 

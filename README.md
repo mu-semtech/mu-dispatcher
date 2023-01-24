@@ -6,7 +6,97 @@ The mu-dispatcher is one of the core elements in the mu.semte.ch architecture.  
 
 The Dispatcher runs as an application in which the `Dispatcher` module is overridden.  It expects a dispatcher.ex file to exist on `/config/dispatcher.ex` when the dispatcher boots up.
 
-# Table of Contents
+## Tutorial: Dispatching requests to the correct microservice
+The [mu-project](https://github.com/mu-semtech/mu-project) repository offers a good starting point to bootstrap a new mu.semte.ch project. The `docker-compose.yml` to start from consists of 3 core components: `mu-identifier`, `mu-dispatcher` and `virtuoso` (a Virtuoso triple store).
+
+### Request flow
+We will first recapitulate the general request flow in mu.semte.ch. Putting it very simply, an HTTP request in mu.semte.ch goes through the following flow from the frontend to the microservice:
+
+![mu.semte.ch request flow](http://mu.semte.ch/wp-content/uploads/2017/04/request-flow-1024x516.png)
+
+A request originating from the frontend first passes through the mu-identifier which will identify the session. Next, the request is forwarded to the mu-dispatcher, which will on its turn forward the request to the correct microservice. One of login, registration, files or products in the example above. Finally, the microservice handles the request, hereby possibly reading/writing to the triple store.
+
+As the name mu-dispatcher implies, the service dispatches incoming requests to another microservice in the backend. For example, a login request needs to be forwarded to the login-service, while a request to upload a file needs to land at the files-service. How does the dispatcher know who to forward a request to? It does this based on the incoming request path and a simple configuration.
+
+### Add the dispatcher to your project
+To include the dispatcher in your project (which you really should since it’s a core component of the mu.semte.ch platform), add the following service to your `docker-compose.yml`. If you used `mu-project` to bootstrap your project, the service will already be available.
+
+```yaml
+services: 
+  dispatcher:
+    image: semtech/mu-dispatcher:1.1.0
+    links:
+      - login:login
+      - registration:registration
+      - files:files
+      - products:products
+    volumes:
+      - ./config/dispatcher:/config
+```
+
+Under the ‘links’ section, the dispatcher should list all the microservices it needs to forward requests to. These will basically be all the microservices in your stack except mu-identifier and the triple store. The links aren’t required anymore since docker-compose v2, all services specified in a docker-compose can connect to each other through their service name, but we still keep them in for clearness. The links also allow to [provide an alias for a service](https://docs.docker.com/compose/compose-file/compose-file-v2/#links) in `mu-dispatcher`.
+
+### Configuring the dispatcher
+The dispatcher’s configuration is written in [Elixir](https://elixir-lang.org/). However, you don’t need in-depth knowledge of the Elixir in order to configure it. The dispatcher just needs one [Elixir](https://elixir-lang.org/) configuration file ‘dispatcher.ex’ which needs to be mounted in the `/config` folder of the dispatcher container. The mu-project repository contains a good starting point for the dispatcher configuration file in [/config/dispatcher/dispatcher.ex](https://github.com/mu-semtech/mu-project/blob/master/config/dispatcher/dispatcher.ex).
+
+```ex
+defmodule Dispatcher do
+  use Plug.Router
+
+  def start(_argv) do
+    port = 80
+    IO.puts "Starting Plug with Cowboy on port #{port}"
+    Plug.Adapters.Cowboy.http __MODULE__, [], port: port
+    :timer.sleep(:infinity)
+  end
+
+  plug Plug.Logger
+  plug :match
+  plug :dispatch
+
+  # In order to forward the 'themes' resource to the
+  # resource service, use the following forward rule.
+  #
+  # docker-compose stop; docker-compose rm; docker-compose up
+  # after altering this file.
+  #
+  # match "/themes/*path" do
+  #   Proxy.forward conn, path, "http://resource/themes/"
+  # end
+
+  match _ do
+    send_resp( conn, 404, "Route not found. See config/dispatcher.ex" )
+  end
+end
+```
+
+Even if you don’t know the Elixir language, you will probably be able to understand what the file above does. It will just return a 404 Not Found on each of the incoming requests.
+
+You can now start to add your own dispatching rules above the final match block. A dispatch rule always has the format:
+```ex
+match <a-path-to-match-here> do
+  Proxy.forward conn, <part-of-the-matching-path>, <url-to-the-microservice>
+end
+```
+
+For example, to forward all incoming requests starting with ‘/books’ to the products microservice, add the following rule:
+
+```ex
+match "/books/*path" do
+  Proxy.forward conn, path, "http://products/books/"
+end
+```
+
+A request on path ‘/books/1’ will now be forwarded to ‘http://products/books/1’ where products is the name of the products microservice as specified in your docker-compose.yml. Have a look at the [Elixir Plug.Router](https://hexdocs.pm/plug/Plug.Router.html) to learn how to construct more complex rules.
+
+The order of the match blocks is important since the request will be dispatched on the first match. The remaining match rules will not be processed anymore. Hence, a request can only be forwarded to one microservice in the backend.
+
+### Conclusion
+The `mu-dispatcher` is a core component in the mu.semte.ch platform. It dispatches the incoming requests from the frontend to the correct microservice. Without this microservice, the microservices in the backend will not be reachable by the frontend. Although Elixir might look a bit intimidating at first, the dispatcher can be easily configured through one dispatcher.ex file consisting of some matching rules based on the incoming request paths.
+
+*This tutorial has been adapted from Erika Pauwels' mu.semte.ch article. You can view it [here](https://mu.semte.ch/2017/07/13/dispatching-requests-to-the-correct-microservice/)*
+
+## Reference
 1. [Configuration](#Configuration)
 2. [Supported API](#Supported-API)
     1. [Matcher](#Use-Matcher)

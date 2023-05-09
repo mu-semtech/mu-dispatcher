@@ -1,0 +1,20 @@
+pipeline:
+  build-and-push:
+    image: plugins/docker
+    environment:
+      # Owner for the Docker image. If repo owner is mu-semtech, replace with semtech
+      - OWNER=${CI_REPO_OWNER/mu-semtech/semtech}
+      - IMAGE=${CI_REPO_NAME%%service}
+
+    settings:
+      repo: ${OWNER}/${IMAGE}
+      
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+
+
+when:
+  branch: [master]
+  event: [push, tag, deployment]

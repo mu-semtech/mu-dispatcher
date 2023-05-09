@@ -1,0 +1,20 @@
+pipeline:
+  dry-run:
+    image: plugins/docker
+    environment:
+      # Owner for the Docker image. If repo owner is mu-semtech, replace with semtech
+      - OWNER=${CI_REPO_OWNER/mu-semtech/semtech}
+      - IMAGE=${CI_REPO_NAME%%service}
+
+    settings:
+      repo: ${OWNER}/${IMAGE}
+      dry_run: true
+      
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+
+
+when:
+  event: [pull_request]

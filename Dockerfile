@@ -1,4 +1,4 @@
-FROM madnificent/elixir-server:1.12.0
+FROM madnificent/elixir-server:1.13.0
 
 RUN sed -i "2i\\cp /config/dispatcher.ex /app/lib/dispatcher.ex" /startup.sh
 

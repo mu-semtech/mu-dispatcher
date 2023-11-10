@@ -35,7 +35,7 @@ The Dispatcher runs as an application in which the `Dispatcher` module is overri
 
 The disptacher is configured using the dispatcher.ex file in a [mu-project](https://github.com/mu-semtech/mu-project).
 
-The basic (default) configuration of the mu-dispatcher is an Elixir module named `Dispatcher` which uses the `Matcher` functionality.  
+The basic (default) configuration of the mu-dispatcher is an Elixir module named `Dispatcher` which uses the `Matcher` functionality.
 An empty set of accept types is required (`define_accept_types []`).
 
 ```elixir
@@ -252,6 +252,40 @@ If you need to access a part of the API, revert back to the array syntax and def
 
 This specific implementation does require at least one subdomain and it will thus not match `redpencil.io`.
 
+### Forwarding websockets
+
+Dispatcher can forward websocket tunnels.
+
+An example rule is as follows:
+
+```elixir
+  match "/websocket" do
+    ws conn, "ws://push-service-ws/"
+  end
+```
+
+Any websocket connections on `/websocket` get's redirected to `/.mu/ws?target=<something>`.
+The Gun library listens to websockets on `/.mu/ws` which makes everything work.
+The `target` query parameter tells Gun what host to forward to.
+
+
+Note: following redirects is not required in the websockets specs, and most browsers don't support this.
+
+Example workarounds:
+```js
+async function createRedirectedWebsocket(url) {
+    // This prints an error to the console due to unexpected upgrade response
+    const resp = await fetch(url);
+    const ws_url = resp.url.replace(/^http/, 'ws');
+    return new WebSocket(ws_url);
+}
+```
+
+With the 'ws' npm package it is possible to set a `followRedirects` flag.
+```js
+const WebSocket = require('ws')
+const ws = new WebSocket('ws://localhost/ws2', options={'followRedirects': true});
+```
 
 ### Fallback routes and 404 pages
 
@@ -476,7 +510,7 @@ Forwarding connections is built on top of `plug_mint_proxy` which uses the Mint 
 
 ### Wiring with Plug
 [Plug](https://github.com/elixir-plug/plug) expects call to be matched using its own matcher and dispatcher.
-This library provides some extra support.  
+This library provides some extra support.
 Although tying this in within Plug might be simple, the request is dispatched to our own matcher in [plug_router_dispatcher.ex](./lib/plug_router_dispatcher.ex).
 
 ### Header manipulation
@@ -499,5 +533,3 @@ High-level the dispatching works as follows:
 4. For each (B) try to find a matched solution
 5. If a solution is found, return it
 6. If no solution is found, try to find a matched solution with the `last_call` option set to true
-
-

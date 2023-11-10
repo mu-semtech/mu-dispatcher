@@ -1,5 +1,8 @@
 defmodule Proxy do
-  @request_manipulators [Manipulators.AddXRewriteUrlHeader,Manipulators.RemoveAcceptEncodingHeader]
+  @request_manipulators [
+    Manipulators.AddXRewriteUrlHeader,
+    Manipulators.RemoveAcceptEncodingHeader
+  ]
   @response_manipulators [Manipulators.AddVaryHeader]
   @manipulators ProxyManipulatorSettings.make_settings(
                   @request_manipulators,
@@ -13,6 +16,7 @@ defmodule Proxy do
       conn,
       path,
       base,
-      @manipulators)
+      @manipulators
+    )
   end
 end

@@ -25,7 +25,7 @@ The Dispatcher runs as an application in which the `Dispatcher` module is overri
     1. [Host an EmberJS app](#Host-an-EmberJS-app)
     2. [External API CORS headers](#External-API-CORS-headers)
     3. [Provide 404 pages](#Provide-404-pages)
-    4. [Fix slow startup time](#fix-slow-startup-times)
+    4. [Fix slow startup times](#fix-slow-startup-times)
 7. [Architecture](#Architecture)
     1. [forwarding connections with plug_mint_proxy](#Forwarding-Connections)
     2. [Wiring with Plug](#Wiring-with-Plug)

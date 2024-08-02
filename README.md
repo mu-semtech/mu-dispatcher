@@ -466,22 +466,35 @@ defmodule Dispatcher do
   end
 end
 ```
-### fix slow startup times
-On recent kernels you have to limit file descriptors for elixir services via ulimit to decrease the startup time.
+### Fix Slow Start Times
 
-In `/etc/docker/deamon.json` add the following
-```json
-{
-	"default-ulimits": {
-		"nofile": {
-			"Hard": 104583,
-			"Name": "nofile",
-			"Soft": 104583
-		}
-	},
-	...
-}
-```
+If you are experiencing slow start times (5-10 minutes) with Elixir services on recent kernels, you may need to limit file descriptors via `ulimit`. Follow these steps to decrease the startup time:
+
+1. **Edit Docker Daemon Configuration**:
+   
+   Open the Docker daemon configuration file located at `/etc/docker/daemon.json` and add the following configuration:
+
+   ```json
+   {
+     "default-ulimits": {
+       "nofile": {
+         "Hard": 104583,
+         "Name": "nofile",
+         "Soft": 104583
+       }
+     }
+   }
+   ```
+
+2. **Restart Docker**:
+   
+   After updating the configuration, restart the Docker service to apply the changes:
+
+   ```sh
+   sudo systemctl restart docker
+   ```
+
+By setting the `nofile` ulimit, you can significantly reduce the startup time for your Elixir services.
 
 ## Architecture
 

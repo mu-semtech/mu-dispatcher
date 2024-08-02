@@ -35,7 +35,6 @@ The Dispatcher runs as an application in which the `Dispatcher` module is overri
 ### Configuration
 
 The disptacher is configured using the dispatcher.ex file in a [mu-project](https://github.com/mu-semtech/mu-project).
-Improve 
 The basic (default) configuration of the mu-dispatcher is an Elixir module named `Dispatcher` which uses the `Matcher` functionality.  
 An empty set of accept types is required (`define_accept_types []`).
 
@@ -468,7 +467,7 @@ end
 ```
 ### Fix slow start times
 
-If you are experiencing slow start times (5-10 minutes) with Elixir services on recent kernels, you may need to limit file descriptors via `ulimit`. Follow these steps to decrease the startup time:
+If you are experiencing slow start times (5-10 minutes) with Elixir services such as mu-dispatcher. on recent kernels, you may need to limit file descriptors via `ulimit`. Follow these steps to decrease the startup time:
 
 1. **Edit Docker Daemon Configuration**:
    
@@ -478,9 +477,9 @@ If you are experiencing slow start times (5-10 minutes) with Elixir services on 
    {
      "default-ulimits": {
        "nofile": {
-         "Hard": 104583,
-         "Name": "nofile",
-         "Soft": 104583
+          "Name": "nofile",
+          "Soft": 104583,
+          "Hard": 104583
        }
      }
    }

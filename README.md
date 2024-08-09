@@ -467,7 +467,7 @@ end
 ```
 ### Fix slow start times
 
-If you are experiencing slow start times (5-10 minutes) with Elixir services such as mu-dispatcher. on recent kernels, you may need to limit file descriptors via `ulimit`. Follow these steps to decrease the startup time:
+If you are experiencing slow start times (5-10 minutes) with Elixir services such as mu-dispatcher on recent kernels, you may need to limit file descriptors via `ulimit`:
 
 1. **Edit Docker Daemon Configuration**:
    

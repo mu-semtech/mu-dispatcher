@@ -493,7 +493,6 @@ If you are experiencing slow start times (5-10 minutes) with Elixir services suc
    sudo systemctl restart docker
    ```
 
-By setting the `nofile` ulimit, you can significantly reduce the startup time for your Elixir services.
 
 ## Architecture
 

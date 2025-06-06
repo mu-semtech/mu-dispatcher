@@ -44,7 +44,9 @@ config :dispatcher,
   # log whenever a layer starts processing
   log_layer_start_processing: CH.system_boolean("LOG_LAYER_START_PROCESSING"),
   # log whenever a layer matched, and if no matching layer was found
-  log_layer_matching: CH.system_boolean("LOG_LAYER_MATCHING")
+  log_layer_matching: CH.system_boolean("LOG_LAYER_MATCHING"),
+  idle_timeout: System.get_env("IDLE_TIMEOUT", "300000") |> String.to_integer,
+  max_url_length: System.get_env("MAX_URL_LENGTH", "10000") |> String.to_integer
 
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment

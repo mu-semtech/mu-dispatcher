@@ -25,6 +25,7 @@ The Dispatcher runs as an application in which the `Dispatcher` module is overri
     1. [Host an EmberJS app](#Host-an-EmberJS-app)
     2. [External API CORS headers](#External-API-CORS-headers)
     3. [Provide 404 pages](#Provide-404-pages)
+    4. [Fix slow start times](#fix-slow-start-times)
 7. [Architecture](#Architecture)
     1. [forwarding connections with plug_mint_proxy](#Forwarding-Connections)
     2. [Wiring with Plug](#Wiring-with-Plug)
@@ -34,7 +35,6 @@ The Dispatcher runs as an application in which the `Dispatcher` module is overri
 ### Configuration
 
 The disptacher is configured using the dispatcher.ex file in a [mu-project](https://github.com/mu-semtech/mu-project).
-
 The basic (default) configuration of the mu-dispatcher is an Elixir module named `Dispatcher` which uses the `Matcher` functionality.  
 An empty set of accept types is required (`define_accept_types []`).
 
@@ -465,6 +465,34 @@ defmodule Dispatcher do
   end
 end
 ```
+### Fix slow start times
+
+If you are experiencing slow start times (5-10 minutes) with Elixir services such as mu-dispatcher on recent kernels, you may need to limit file descriptors via `ulimit`:
+
+1. **Edit Docker Daemon Configuration**:
+   
+   Open the Docker daemon configuration file located at `/etc/docker/daemon.json` and add the following configuration:
+
+   ```json
+   {
+     "default-ulimits": {
+       "nofile": {
+          "Name": "nofile",
+          "Soft": 104583,
+          "Hard": 104583
+       }
+     }
+   }
+   ```
+
+2. **Restart Docker**:
+   
+   After updating the configuration, restart the Docker service to apply the changes:
+
+   ```sh
+   sudo systemctl restart docker
+   ```
+
 
 ## Architecture
 

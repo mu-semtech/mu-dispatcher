@@ -2,7 +2,7 @@ defmodule Dispatcher.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :dispatcher, version: "2.1.0", elixir: "~> 1.7", deps: deps()]
+    [app: :dispatcher, version: "2.1.1", elixir: "~> 1.7", deps: deps()]
   end
 
   # Configuration for the OTP application

@@ -10,7 +10,17 @@ defmodule MuDispatcher do
     port = 80
 
     children = [
-      {Plug.Cowboy, scheme: :http, plug: PlugRouterDispatcher, options: [port: port]}
+      {
+        Plug.Cowboy,
+        scheme: :http,
+        plug: PlugRouterDispatcher,
+        options: [
+          port: port,
+          protocol_options: [
+            idle_timeout: Application.get_env(:dispatcher, :idle_timeout),
+            max_request_line_length: Application.get_env(:dispatcher, :max_url_length)
+          ]
+        ]}
     ]
 
     Logger.info("Mu Dispatcher starting on port #{port}")

@@ -207,7 +207,7 @@ defmodule Matcher do
       |> rework_options_for_array_accept()
 
     # Throw warning when strange conditions occur
-    unless String.starts_with?(path, "/") do
+    unless path == "" || String.starts_with?(path, "/") do
       IO.puts("WARNING: invalid path: #{path} does not start with a `/`")
     end
 

@@ -18,7 +18,8 @@ defmodule MuDispatcher do
           port: port,
           protocol_options: [
             idle_timeout: Application.get_env(:dispatcher, :idle_timeout),
-            max_request_line_length: Application.get_env(:dispatcher, :max_url_length)
+            max_request_line_length: Application.get_env(:dispatcher, :max_url_length),
+            max_skip_body_length: :infinity
           ]
         ]}
     ]
